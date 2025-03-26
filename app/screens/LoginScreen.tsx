@@ -1,138 +1,205 @@
 import React, { useState } from "react";
-import { 
-  View, Text, TextInput, TouchableOpacity, 
-  StyleSheet, Alert, ActivityIndicator 
+import {
+  View, Text, TextInput, TouchableOpacity,
+  StyleSheet, ScrollView, ActivityIndicator
 } from "react-native";
-import { useRouter } from "expo-router"; // ✅ Usa expo-router para navegación
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { loginUser } from "../../api/api";
 import { useAuthStore } from "../../store/useAuthStore";
+import Animated, { useSharedValue, withSpring, useAnimatedStyle } from "react-native-reanimated";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // ✅ Estado para la carga
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const iconScale = useSharedValue(1);
 
-  // 🔹 Manejo de inicio de sesión
-  const handleLogin = async () => {
-    console.log("📌 Intentando iniciar sesión...");
+const animatedIconStyle = useAnimatedStyle(() => ({
+  transform: [{ scale: iconScale.value }],
+  opacity: iconScale.value,
+}));
 
-    if (!email || !password) {
-      Alert.alert("Error", "Por favor, completa todos los campos.");
-      return;
+  const [emailOrUser, setEmailOrUser] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const validateFields = () => {
+    let valid = true;
+    if (!emailOrUser.trim()) {
+      setEmailError("Este campo no puede estar vacío");
+      valid = false;
+    } else if (emailOrUser.includes("@") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOrUser)) {
+      setEmailError("El correo no es válido");
+      valid = false;
+    } else {
+      setEmailError("");
     }
 
-    setIsLoading(true); // 🔹 Mostrar pantalla de carga
-    const result = await loginUser(email, password);
-    
-    console.log("📌 Respuesta de la API:", result);
-    setIsLoading(false); // 🔹 Ocultar carga después de recibir respuesta
+    if (!password.trim()) {
+      setPasswordError("Este campo no puede estar vacío");
+      valid = false;
+    } else {
+      setPasswordError("");
+    }
+
+    return valid;
+  };
+
+  const handleLogin = async () => {
+    if (!validateFields()) return;
+
+    setIsLoading(true);
+    const result = await loginUser(emailOrUser, password);
+    setIsLoading(false);
 
     if (result.token && result.user) {
       login(result.token, result.user);
-      Alert.alert("Inicio de sesión exitoso");
-      router.replace("/(tabs)"); // ✅ Redirige a la pantalla principal
+      router.replace("/(tabs)");
     } else {
-      Alert.alert("Error", result.message || "Credenciales incorrectas.");
+      alert(result.message || "Credenciales incorrectas.");
     }
   };
 
-  // 🔹 Manejo del botón "Saltar"
-  const handleSkip = () => {
-    Alert.alert("Acceso sin cuenta", "Estás entrando sin iniciar sesión.");
-    router.replace("/(tabs)"); // ✅ Redirige a la app sin autenticación
-  };
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Iniciar Sesión</Text>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      {/* 🔙 Flecha de retroceso */}
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={24} color="#000" />
+      </TouchableOpacity>
 
-      <TextInput 
-        style={styles.input} 
-        placeholder="Correo" 
-        onChangeText={setEmail} 
-        value={email} 
-        keyboardType="email-address" 
-      />
-      
-      <TextInput 
-        style={styles.input} 
-        placeholder="Contraseña" 
-        onChangeText={setPassword} 
-        value={password} 
-        secureTextEntry 
-      />
+      <Text style={styles.title}>Usuario</Text>
 
-      {/* 🔹 Mostrar indicador de carga en lugar del botón */}
+      <TextInput
+        placeholder="Nombre de usuario o e-mail"
+        placeholderTextColor="#555"
+        style={styles.input}
+        value={emailOrUser}
+        onChangeText={setEmailOrUser}
+      />
+      {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+
+      <View style={styles.passwordContainer}>
+        <TextInput
+          placeholder="Contraseña"
+          placeholderTextColor="#555"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          style={styles.passwordInput}
+        />
+       <TouchableOpacity
+  onPress={() => {
+    iconScale.value = withSpring(1.25, { damping: 10 }, () => {
+      iconScale.value = withSpring(1);
+    });
+    setShowPassword(!showPassword);
+  }}
+>
+  <Animated.View style={animatedIconStyle}>
+    <Ionicons
+      name={showPassword ? "eye-outline" : "eye-off-outline"}
+      size={22}
+      color="#555"
+      style={{ marginLeft: 10 }}
+    />
+  </Animated.View>
+</TouchableOpacity>
+
+      </View>
+      {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
       {isLoading ? (
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#00786F" style={{ marginTop: 15 }} />
       ) : (
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={isLoading}>
-          <Text style={styles.buttonText}>INICIAR SESIÓN</Text>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Inicia sesión</Text>
         </TouchableOpacity>
       )}
 
-      <TouchableOpacity onPress={() => router.push("/screens/RegisterScreen")}>
-        <Text style={styles.registerText}>¿No tienes cuenta? Regístrate</Text>
+      <TouchableOpacity>
+        <Text style={styles.link}>¿Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
 
-      {/* 🔹 Botón "Saltar" para entrar sin iniciar sesión */}
-      <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-        <Text style={styles.skipButtonText}>Saltar</Text>
+      <TouchableOpacity>
+        <Text style={styles.helpText}>¿Necesitas ayuda?</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
-
-// 📌 Estilos mejorados
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     padding: 20,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#fff",
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 20,
+    textAlign: "center",
+    marginBottom: 100,
   },
   input: {
-    width: "100%",
-    padding: 10,
-    marginVertical: 10,
-    borderWidth: 1,
+    borderBottomWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 10,
-    backgroundColor: "#fff",
+    paddingVertical: 12,
+    marginBottom: 5,
+    color: "#000", // 👈 importante
+    backgroundColor: "#fff", // 👈 si usas fondo claro
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+    paddingVertical: 2,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 12,
+    color: "#000", // 👈 importante
+  backgroundColor: "#fff", // 👈 importante
+  borderWidth: 0,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 13,
+    marginBottom: 10,
+    marginLeft: 5,
+    alignSelf: "flex-start",
   },
   button: {
     backgroundColor: "#007AFF",
-    padding: 15,
-    borderRadius: 10,
-    width: "100%",
+    padding: 14,
+    borderRadius: 8,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 20,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
     fontWeight: "bold",
+    fontSize: 16,
   },
-  registerText: {
+  link: {
+    color: "#007AFF",
+    textAlign: "center",
     marginTop: 15,
-    color: "#007AFF",
-    fontWeight: "bold",
+    textDecorationLine: "underline",
   },
-  skipButton: {
-    marginTop: 20,
-    padding: 10,
-  },
-  skipButtonText: {
+  helpText: {
     color: "#007AFF",
-    fontSize: 16,
-    fontWeight: "bold",
+    textAlign: "center",
+    marginTop: 25,
+    fontWeight: "500",
   },
 });

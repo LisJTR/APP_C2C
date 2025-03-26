@@ -1,131 +1,266 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View, Text, TextInput, TouchableOpacity,
+  StyleSheet, Pressable, ScrollView, ActivityIndicator
+} from "react-native";
 import { registerUser } from "../../api/api";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import Animated, { useSharedValue, withSpring, useAnimatedStyle } from "react-native-reanimated";
 
 export default function RegisterScreen() {
+  const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Estados para mostrar errores
+  const [offersChecked, setOffersChecked] = useState(false);
+  const [termsChecked, setTermsChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [usernameError, setUsernameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const iconScale = useSharedValue(1);
 
-  const router = useRouter();
+const animatedIconStyle = useAnimatedStyle(() => ({
+  transform: [{ scale: iconScale.value }],
+  opacity: iconScale.value,
+}));
 
-  // Validación en tiempo real
-  const validateUsername = (text: string) => {
-    setUsername(text);
-    setUsernameError(text.length === 0 ? "El usuario es obligatorio." : "");
+
+  const validateUsername = (value: string) => {
+    setUsername(value);
+    if (!value.trim()) {
+      setUsernameError("El nombre de usuario no puede quedar en blanco");
+    } else if (value.length < 3 || value.length > 20) {
+      setUsernameError("Debe tener entre 3 y 20 caracteres");
+    } else if (!/^[a-zA-Z0-9]+$/.test(value)) {
+      setUsernameError("Solo puede incluir letras y números");
+    } else {
+      setUsernameError("");
+    }
   };
 
-  const validateEmail = (text: string) => {
-    setEmail(text);
-    setEmailError(
-      text.length === 0
-        ? "El correo es obligatorio."
-        : !text.includes("@") || !text.includes(".")
-        ? "Ingresa un correo válido."
-        : ""
-    );
+  const validateEmail = (value: string) => {
+    setEmail(value);
+    if (!value.trim()) {
+      setEmailError("Introduce e-mail para continuar");
+    } else if (!value.includes("@") || !value.includes(".")) {
+      setEmailError("E-mail es incorrecto");
+    } else {
+      setEmailError("");
+    }
   };
 
-  const validatePassword = (text: string) => {
-    setPassword(text);
-    setPasswordError(
-      text.length === 0
-        ? "La contraseña es obligatoria."
-        : text.length < 6
-        ? "Debe tener al menos 6 caracteres."
-        : ""
-    );
+  const validatePassword = (value: string) => {
+    setPassword(value);
+    if (!value.trim()) {
+      setPasswordError("La contraseña no puede quedar en blanco");
+    } else if (value.length < 6) {
+      setPasswordError("Debe tener al menos 6 caracteres");
+    } else {
+      setPasswordError("");
+    }
   };
 
   const handleRegister = async () => {
-    console.log("📌 Intentando registrar...");
+    validateUsername(username);
+    validateEmail(email);
+    validatePassword(password);
 
-    if (!username || !email || !password || usernameError || emailError || passwordError) {
-      return;
-    }
+    if (usernameError || emailError || passwordError || !termsChecked) return;
 
+    setIsLoading(true);
     const result = await registerUser(username, email, password);
-    console.log("📌 Respuesta de la API:", result);
+    setIsLoading(false);
 
     if (result.user) {
-      alert("Registro exitoso, ahora puedes iniciar sesión.");
-      router.replace("/screens/LoginScreen"); // ✅ Redirige a Login
+      router.replace("/screens/LoginScreen");
     } else {
       alert(result.message || "No se pudo registrar.");
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Registro</Text>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      {/* 🔙 Flecha de retroceso */}
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <Ionicons name="arrow-back" size={22} color="#555" />
+      </TouchableOpacity>
 
-      <TextInput style={styles.input} placeholder="Usuario" onChangeText={validateUsername} value={username} />
+      <Text style={styles.title}>Regístrate</Text>
+
+      <TextInput
+        placeholder="Nombre de usuario"
+         placeholderTextColor="#555"
+        style={styles.input}
+        value={username}
+        onChangeText={validateUsername}
+      />
       {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
 
-      <TextInput style={styles.input} placeholder="Correo" onChangeText={validateEmail} value={email} keyboardType="email-address" />
+      <TextInput
+        placeholder="E-mail"
+        placeholderTextColor="#555"
+        style={styles.input}
+        value={email}
+        onChangeText={validateEmail}
+        keyboardType="email-address"
+      />
       {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
-      <TextInput style={styles.input} placeholder="Contraseña" onChangeText={validatePassword} value={password} secureTextEntry />
-      {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
-
-      <TouchableOpacity
-  style={[
-    styles.button,
-    !!(usernameError || emailError || passwordError || !username || !email || !password) && styles.disabledButton
-  ]}
-  onPress={handleRegister}
-  disabled={!!(usernameError || emailError || passwordError || !username || !email || !password)}
+      <View style={styles.passwordContainer}>
+  <TextInput
+    placeholder="Contraseña"
+    placeholderTextColor="#555"
+    style={styles.passwordInput}
+    value={password}
+    onChangeText={validatePassword}
+    secureTextEntry={!showPassword}
+  />
+ <TouchableOpacity
+  onPress={() => {
+    iconScale.value = withSpring(1.25, { damping: 10 }, () => {
+      iconScale.value = withSpring(1);
+    });
+    setShowPassword(!showPassword);
+  }}
 >
-  <Text style={styles.buttonText}>REGISTRAR</Text>
+  <Animated.View style={animatedIconStyle}>
+    <Ionicons
+      name={showPassword ? "eye-outline" : "eye-off-outline"}
+      size={22}
+      color="#555"
+      style={{ marginLeft: 10 }}
+    />
+  </Animated.View>
 </TouchableOpacity>
 
+</View>
 
-      <TouchableOpacity onPress={() => router.push("/screens/LoginScreen")}>
-        <Text style={styles.loginText}>¿Ya tienes cuenta? Inicia sesión</Text>
+      {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+      <Pressable style={styles.checkboxRow} onPress={() => setOffersChecked(!offersChecked)}>
+        <View style={styles.checkbox}>
+          {offersChecked && <View style={styles.checkboxChecked} />}
+        </View>
+        <Text style={styles.checkboxText}>
+          Quiero recibir ofertas personalizadas y novedades por e-mail.
+        </Text>
+      </Pressable>
+
+      <Pressable style={styles.checkboxRow} onPress={() => setTermsChecked(!termsChecked)}>
+        <View style={styles.checkbox}>
+          {termsChecked && <View style={styles.checkboxChecked} />}
+        </View>
+        <Text style={styles.checkboxText}>
+          Al registrarme, confirmo que acepto los{" "}
+          <Text style={styles.link}>Términos y condiciones</Text>, he leído la{" "}
+          <Text style={styles.link}>Política de privacidad</Text> y tengo al menos 18 años.
+        </Text>
+      </Pressable>
+
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#00786F" style={{ marginTop: 10 }} />
+      ) : (
+        <TouchableOpacity
+          style={[
+            styles.button,
+            (!termsChecked || usernameError || emailError || passwordError || !username || !email || !password) &&
+              styles.disabledButton,
+          ]}
+          onPress={handleRegister}
+          disabled={
+            !termsChecked || !!usernameError || !!emailError || !!passwordError || !username || !email || !password
+          }
+        >
+          <Text style={styles.buttonText}>Regístrate</Text>
+        </TouchableOpacity>
+      )}
+
+      <TouchableOpacity>
+        <Text style={styles.helpText}>¿Necesitas ayuda?</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
-// 📌 Estilos mejorados
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     padding: 20,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#fff",
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 100,
+    textAlign: "center",
   },
   input: {
-    width: "100%",
-    padding: 10,
-    marginVertical: 5,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+    backgroundColor: "#fff",
+    color: "#000",
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 10,
     backgroundColor: "#fff",
   },
-  errorText: {
-    color: "red",
+  checkboxRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 15,
+    marginTop: 10,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: "#007AFF",
+    marginRight: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkboxChecked: {
+    width: 12,
+    height: 12,
+    backgroundColor: "#2F70AF",
+    borderRadius: 2,
+  },
+  checkboxText: {
+    flex: 1,
     fontSize: 14,
-    marginBottom: 5,
+    color: "#333",
+  },
+  link: {
+    color: "#007AFF",
+    textDecorationLine: "underline",
   },
   button: {
-    backgroundColor: "#28A745",
-    padding: 15,
-    borderRadius: 10,
-    width: "100%",
+    backgroundColor: "#007AFF",
+    padding: 14,
+    borderRadius: 8,
     alignItems: "center",
     marginTop: 10,
   },
@@ -134,12 +269,27 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
     fontWeight: "bold",
   },
-  loginText: {
-    marginTop: 15,
+  helpText: {
     color: "#007AFF",
-    fontWeight: "bold",
+    textAlign: "center",
+    marginTop: 25,
+    fontWeight: "500",
   },
+  errorText: {
+    color: "red",
+    fontSize: 13,
+    marginBottom: 10,
+    marginLeft: 5,
+    alignSelf: "flex-start",
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 0,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    color: "#",
+  },  
 });

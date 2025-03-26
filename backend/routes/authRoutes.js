@@ -82,5 +82,63 @@ router.post("/login", async (req, res) => {
   }
 });
 
+const axios = require("axios");
+
+// Login con Google
+router.post("/google", async (req, res) => {
+  const { access_token } = req.body;
+
+  if (!access_token) {
+    return res.status(400).json({ message: "Falta el token de Google" });
+  }
+
+  try {
+    // Obtener datos del usuario desde Google
+    const googleRes = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const googleUser = googleRes.data;
+
+    const email = googleUser.email;
+    const username = googleUser.name || email.split("@")[0];
+
+    // Verificar si ya existe en tu base de datos
+    const userResult = await pool.query("SELECT id, username, email FROM users WHERE email = $1", [email]);
+
+    let user;
+
+    if (userResult.rows.length > 0) {
+      user = userResult.rows[0];
+    } else {
+      // Si no existe, lo creamos sin contraseña (autenticado por Google)
+      const newUser = await pool.query(
+        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email",
+        [username, email, null] // contraseña null
+      );
+      user = newUser.rows[0];
+    }
+
+    // Generar JWT
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      message: "Inicio de sesión con Google exitoso",
+      token,
+      user,
+    });
+
+  } catch (error) {
+    console.error("❌ Error verificando token de Google:", error.message);
+    res.status(401).json({ message: "Token de Google inválido" });
+  }
+});
+
 
 module.exports = router;

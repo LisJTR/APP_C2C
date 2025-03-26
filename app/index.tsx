@@ -1,0 +1,35 @@
+// app/index.tsx
+import { useEffect, useState } from "react";
+import { ActivityIndicator, View, Platform } from "react-native";
+import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { getToken } from "@/utils/storage";
+
+export default function IndexRedirect() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const redirect = async () => {
+      const token = await getToken("userToken");
+
+      if (!token) {
+        if (Platform.OS === "web") {
+          router.replace("/welcome");
+        } else {
+          router.replace("/screens/WelcomeScreenMobile");
+        }
+      } else {
+        router.replace("/(tabs)");
+      }
+    };
+
+    redirect();
+  }, []);
+
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" color="#007AFF" />
+    </View>
+  );
+}
