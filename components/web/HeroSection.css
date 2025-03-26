@@ -1,0 +1,73 @@
+/* components/web/HeroSection.css */
+
+.hero-container {
+    position: relative;
+    z-index: 0;
+    width: 100%;
+    height: 85vh;
+    overflow: visible;
+    background-color: #f3f4f6; /* gris claro */
+  }
+  
+  .hero-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .hero-overlay {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 0 24px;
+    text-align: center;
+  }
+  
+  .hero-content {
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .hero-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937; /* gris oscuro */
+    margin-bottom: 16px;
+  }
+  
+  .hero-button {
+    background-color: #0f766e;
+    color: white;
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .hero-button:hover {
+    background-color: #115e59;
+  }
+  
+  .hero-link {
+    margin-top: 12px;
+    font-size: 0.875rem;
+    color: #0f766e;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  
+  .hero-link:hover {
+    color: #115e59;
+  }
+  
