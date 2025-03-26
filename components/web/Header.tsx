@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
     width: 180,
-    zIndex: 100, // Aumentado para que se vea sobre la navBar
+    zIndex: 9999, // Aumentado para que se vea sobre la navBar
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
