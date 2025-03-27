@@ -1,8 +1,9 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { body, validationResult } = require("express-validator");
-const pool = require("../config/db");
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { body, validationResult } from "express-validator";
+import pool from "../config/db.js";
+import axios from "axios";
 
 const router = express.Router();
 
@@ -46,17 +47,21 @@ router.post(
 
 // Inicio de sesión
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { identifier, password } = req.body;
 
   try {
-    const user = await pool.query("SELECT id, username, email, password FROM users WHERE email = $1", [email]);
+    console.log("🟡 Intento login:", identifier, password);
+
+    const user = await pool.query(
+      "SELECT id, username, email, password FROM users WHERE email = $1 OR username = $1", [identifier]);
     if (user.rows.length === 0) {
-      return res.status(400).json({ message: "Email o contraseña incorrectos" });
+      return res.status(400).json({ message: "Email, usuario o contraseña incorrectos" });
     }
 
     const validPassword = await bcrypt.compare(password, user.rows[0].password);
+    console.log("🔑 ¿Contraseña válida?:", validPassword);
     if (!validPassword) {
-      return res.status(400).json({ message: "Email o contraseña incorrectos" });
+      return res.status(400).json({ message: "Email, usuario o contraseña incorrectos" });
     }
 
     const token = jwt.sign(
@@ -65,7 +70,7 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    // ✅ Ahora se devuelve el usuario en la respuesta
+    //Devuelve el usuario en la respuesta
     res.json({
       message: "Inicio de sesión exitoso",
       token,
@@ -80,9 +85,12 @@ router.post("/login", async (req, res) => {
     console.error("Error en el inicio de sesión:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
+  console.log("🧪 Resultado de búsqueda:", user.rows);
+
 });
 
-const axios = require("axios");
+
+
 
 // Login con Google
 router.post("/google", async (req, res) => {
@@ -141,4 +149,4 @@ router.post("/google", async (req, res) => {
 });
 
 
-module.exports = router;
+export default router;

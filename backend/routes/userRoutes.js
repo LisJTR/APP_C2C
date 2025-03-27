@@ -1,7 +1,7 @@
-const express = require("express");
-const { body, validationResult } = require("express-validator");
-const pool = require("../config/db");
-const authMiddleware = require("../middlewares/authMiddleware"); // Middleware para proteger rutas
+import express from "express";
+import { body, validationResult } from "express-validator";
+import pool from "../config/db.js";
+import authMiddleware from "../middlewares/authMiddleware.js"; // Middleware para proteger rutas
 
 const router = express.Router();
 
@@ -71,4 +71,4 @@ router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
     }
   });
 
-module.exports = router;
+  export default router;
