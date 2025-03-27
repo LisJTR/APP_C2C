@@ -2,7 +2,7 @@
 
 ###  Descripción de la App 👕📱  
 
-Este es un proyecto desarrollado en **React Native con Expo**, inspirado en la plataforma **Vinted**.  
+Este es un proyecto desarrollado en **React Native con Expo**.  
 
 ####  Objetivo  
 Crear una aplicación funcional para la **compra y venta de productos de segunda mano**, donde los usuarios puedan:  
