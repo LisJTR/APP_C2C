@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://192.168.1.227:5000/api"; // Cambia esto si usas un móvil físico
+const API_URL = "http://192.168.1.36:5000/api"; // Cambia esto si usas un móvil físico
 
 const api = axios.create({
   baseURL: API_URL,
@@ -28,14 +28,15 @@ export const registerUser = async (username, email, password) => {
   }
 };
 
-export const loginUser = async (email, password) => {
+export const loginUser = async (identifier, password) => {
   try {
     const response = await axios.post(`${API_URL}/auth/login`, {
-      email,
+      identifier,
       password,
     });
     return response.data;
   } catch (error) {
+    console.error("❌ Error login:", error.response?.data || error);
     return error.response?.data || { message: "Error en el inicio de sesión" };
   }
 };

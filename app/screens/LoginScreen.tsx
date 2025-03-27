@@ -53,7 +53,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
     if (!validateFields()) return;
 
     setIsLoading(true);
-    const result = await loginUser(emailOrUser, password);
+    const result = await loginUser(emailOrUser.trim().toLowerCase(), password);
     setIsLoading(false);
 
     if (result.token && result.user) {
