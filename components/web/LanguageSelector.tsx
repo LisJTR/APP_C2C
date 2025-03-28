@@ -5,9 +5,8 @@ import "./LanguageSelector.css";
 
 const languages = [
   { code: "es", label: "Español (Spanish)" },
-  { code: "fr", label: "Français (French)" },
   { code: "en", label: "English (English)" },
-  { code: "nl", label: "Nederlands (Dutch)" },
+  { code: "pt", label: "Português (Portuguese)" },
 ];
 
 export default function LanguageSelector() {
@@ -33,8 +32,7 @@ export default function LanguageSelector() {
   return (
     <div className="lang-selector" ref={selectorRef}>
       <button className="lang-button" onClick={() => setOpen(!open)}>
-        {selected.toUpperCase()}{" "}
-        <ChevronDown size={16} strokeWidth={2} className="lang-icon" />
+        {selected.toUpperCase()} <ChevronDown size={16} strokeWidth={2} className="arrow" />
       </button>
 
       {open && (

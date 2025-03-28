@@ -7,9 +7,17 @@ import {
   TextInput,
   TouchableOpacity,
   Pressable,
+  Platform,
 } from "react-native";
 import { ChevronDown, Search, HelpCircle } from "lucide-react";
 import LanguageSelector from "./LanguageSelector";
+import DropdownPortal from "./DropdownPortal";
+
+const MENU_OPTIONS = [
+  { id: "articles", label: "Artículos" },
+  { id: "members", label: "Miembros" },
+  { id: "support", label: "Centro de asistencia" },
+];
 
 type HeaderProps = {
   onLoginPress: () => void;
@@ -17,13 +25,25 @@ type HeaderProps = {
 
 export default function Header({ onLoginPress }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [selectedMenu, setSelectedMenu] = useState("members");
+  const dropdownButtonRef = useRef<any>(null);
+  const [dropdownTop, setDropdownTop] = useState(0);
+  const [dropdownLeft, setDropdownLeft] = useState(0);
+
+  const toggleMenu = () => {
+    if (dropdownButtonRef.current) {
+      const rect = dropdownButtonRef.current.getBoundingClientRect();
+      setDropdownTop(rect.bottom);
+      setDropdownLeft(rect.left);
+    }
+    setMenuOpen(!menuOpen);
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
-        dropdownRef.current &&
-        !(dropdownRef.current as any).contains(e.target)
+        dropdownButtonRef.current &&
+        !dropdownButtonRef.current.contains(e.target as Node)
       ) {
         setMenuOpen(false);
       }
@@ -40,32 +60,31 @@ export default function Header({ onLoginPress }: HeaderProps) {
 
         {/* Categoría + Buscador */}
         <View style={styles.searchSection}>
-          <View ref={dropdownRef}>
-            <Pressable
-              style={styles.categoryButton}
-              onPress={() => setMenuOpen(!menuOpen)}
+          {Platform.OS === "web" ? (
+            <div
+              ref={dropdownButtonRef}
+              style={{ position: "relative", display: "inline-block" }}
             >
-              <Text style={styles.categoryText}>Miembros</Text>
-              <ChevronDown size={16} color="#333" />
-            </Pressable>
-
-            {menuOpen && (
-              <View style={styles.dropdown}>
-                {["Artículos", "Miembros", "Centro de asistencia"].map(
-                  (option) => (
-                    <Text key={option} style={styles.dropdownItem}>
-                      {option}
-                    </Text>
-                  )
-                )}
-              </View>
-            )}
-          </View>
+              <button className="lang-button" onClick={toggleMenu} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer' }}>
+                <span style={{ fontSize: 14, fontWeight: 'bold', color: '#333' }}>
+                  {MENU_OPTIONS.find((o) => o.id === selectedMenu)?.label || "Seleccionar"}
+                </span>
+                <ChevronDown size={16} color="#333" />
+              </button>
+            </div>
+          ) : (
+            <View style={{ position: "relative" }}>
+              <Pressable style={styles.categoryButton} onPress={toggleMenu}>
+                <Text style={styles.categoryText}>Miembros</Text>
+                <ChevronDown size={16} color="#333" />
+              </Pressable>
+            </View>
+          )}
 
           <View style={styles.searchContainer}>
             <Search size={18} color="#888" style={{ marginLeft: 8 }} />
             <TextInput
-              placeholder="Busca miembros"
+              placeholder={`Busca ${MENU_OPTIONS.find((o) => o.id === selectedMenu)?.label.toLowerCase()}`}
               style={styles.searchInput}
               placeholderTextColor="#888"
             />
@@ -86,6 +105,25 @@ export default function Header({ onLoginPress }: HeaderProps) {
           <LanguageSelector />
         </View>
       </View>
+
+      {menuOpen && (
+        <DropdownPortal style={{ top: `${dropdownTop}px`, left: `${dropdownLeft}px` }}>
+          <div className="lang-dropdown">
+            {MENU_OPTIONS.map((option) => (
+              <div
+                key={option.id}
+                className={`lang-option ${selectedMenu === option.id ? "active" : ""}`}
+                onClick={() => {
+                  setSelectedMenu(option.id);
+                  setMenuOpen(false);
+                }}
+              >
+                {option.label}
+              </div>
+            ))}
+          </div>
+        </DropdownPortal>
+      )}
 
       {/* 🔹 Barra inferior de navegación */}
       <View style={styles.navBar}>
@@ -151,9 +189,6 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   dropdown: {
-    position: "absolute",
-    top: 45,
-    left: 0,
     backgroundColor: "#fff",
     borderRadius: 8,
     shadowColor: "#000",
@@ -162,7 +197,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
     width: 180,
-    zIndex: 100, // Aumentado para que se vea sobre la navBar
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
@@ -228,8 +262,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderColor: "#e5e7eb",
-    zIndex: 1, // Asegúrate que esté debajo de los dropdowns
-    position: "relative", // Necesario para que zIndex funcione correctamente
+    zIndex: -1,
+    position: "relative",
   },
   navItem: {
     fontSize: 14,

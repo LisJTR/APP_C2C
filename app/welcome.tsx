@@ -15,7 +15,9 @@ export default function WelcomeScreen() {
       {Platform.OS === "web" ? (
         <>
           {/* 🔹 Cabecera y bienvenida para web */}
+          <View style={{ position: "relative", zIndex: 10 }}>
           <Header onLoginPress={() => setShowModal(true)} />
+          </View>
           
         </>
       ) : (
@@ -44,7 +46,12 @@ export default function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    position: "relative",
+    overflow: "visible", // ✅ necesario para que los dropdowns puedan salir
+  },
   topRight: {
     alignItems: "flex-end",
     padding: 20,
