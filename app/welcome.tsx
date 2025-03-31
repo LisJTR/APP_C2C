@@ -1,35 +1,37 @@
 // app/welcome.tsx
 import { View, Text, StyleSheet, Pressable, Platform } from "react-native";
-import { useState } from "react";
-import AuthModal from "../components/web/AuthModalWeb";
-
-// Componentes web
+import { useState, useEffect } from "react";
+import { usePathname } from "expo-router"; // 👈 Importar
+import AuthModal from "../components/web/ScreensModal/AuthModalWeb";
 import Header from "../components/web/Header";
 import HeroSection from "../components/web/HeroSection";
 
 export default function WelcomeScreen() {
   const [showModal, setShowModal] = useState(false);
+  const pathname = usePathname(); // 👈 Obtener ruta actual
+
+  useEffect(() => {
+    if (pathname !== "/welcome") {
+      setShowModal(false); // 👈 Cerrar modal si navegas a otra ruta
+    }
+  }, [pathname]);
 
   return (
     <View style={styles.container}>
       {Platform.OS === "web" ? (
         <>
-          {/* 🔹 Cabecera y bienvenida para web */}
           <View style={{ position: "relative", zIndex: 10 }}>
-          <Header onLoginPress={() => setShowModal(true)} />
+            <Header onLoginPress={() => setShowModal(true)} />
           </View>
-          
         </>
       ) : (
         <>
-          {/* 🔹 Parte superior para Móvil */}
           <View style={styles.topRight}>
             <Pressable onPress={() => setShowModal(true)}>
               <Text style={styles.loginText}>Regístrate | Inicia Sesión</Text>
             </Pressable>
           </View>
 
-          {/* 🔹 Contenido de bienvenida para Móvil */}
           <View style={styles.content}>
             <Text style={styles.title}>Bienvenido a Vinted Ecuador 👋</Text>
             <Text style={styles.subtitle}>
@@ -39,11 +41,11 @@ export default function WelcomeScreen() {
         </>
       )}
 
-      {/* 🔹 Modal compartido para web y móvil */}
       <AuthModal visible={showModal} onClose={() => setShowModal(false)} />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

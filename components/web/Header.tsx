@@ -12,6 +12,7 @@ import {
 import { ChevronDown, Search, HelpCircle } from "lucide-react";
 import LanguageSelector from "./LanguageSelector";
 import DropdownPortal from "./DropdownPortal";
+import "./LanguageSelector.css"; // reutilizamos el mismo estilo
 
 const MENU_OPTIONS = [
   { id: "articles", label: "Artículos" },
@@ -24,33 +25,33 @@ type HeaderProps = {
 };
 
 export default function Header({ onLoginPress }: HeaderProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState("members");
-  const dropdownButtonRef = useRef<any>(null);
-  const [dropdownTop, setDropdownTop] = useState(0);
-  const [dropdownLeft, setDropdownLeft] = useState(0);
-
-  const toggleMenu = () => {
-    if (dropdownButtonRef.current) {
-      const rect = dropdownButtonRef.current.getBoundingClientRect();
-      setDropdownTop(rect.bottom);
-      setDropdownLeft(rect.left);
-    }
-    setMenuOpen(!menuOpen);
-  };
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState("articles");
+  const ref = useRef<HTMLDivElement>(null);
+  const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownButtonRef.current &&
-        !dropdownButtonRef.current.contains(e.target as Node)
-      ) {
-        setMenuOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const toggleMenu = () => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setDropdownCoords({ top: rect.bottom, left: rect.left });
+    }
+    setOpen(!open);
+  };
+
+  const handleSelect = (id: string) => {
+    setSelected(id);
+    setOpen(false);
+  };
 
   return (
     <>
@@ -61,30 +62,52 @@ export default function Header({ onLoginPress }: HeaderProps) {
         {/* Categoría + Buscador */}
         <View style={styles.searchSection}>
           {Platform.OS === "web" ? (
-            <div
-              ref={dropdownButtonRef}
-              style={{ position: "relative", display: "inline-block" }}
-            >
-              <button className="lang-button" onClick={toggleMenu} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer' }}>
-                <span style={{ fontSize: 14, fontWeight: 'bold', color: '#333' }}>
-                  {MENU_OPTIONS.find((o) => o.id === selectedMenu)?.label || "Seleccionar"}
-                </span>
-                <ChevronDown size={16} color="#333" />
+            <div className="lang-selector" ref={ref}>
+              <button className="lang-button" onClick={toggleMenu}>
+                {
+                  MENU_OPTIONS.find((opt) => opt.id === selected)?.label ||
+                  "Seleccionar"
+                }{" "}
+                <ChevronDown size={16} strokeWidth={2} className="arrow" />
               </button>
+
+              {open && (
+                <div
+                  className="lang-dropdown"
+                  style={{
+                    position: "absolute",
+                    top: `${dropdownCoords.top}px`,
+                    left: `${dropdownCoords.left -530}px`,
+                    zIndex: 9999,
+                  }}
+                >
+                  {MENU_OPTIONS.map((option) => (
+                    <div
+                      key={option.id}
+                      className={`lang-option ${
+                        selected === option.id ? "active" : ""
+                      }`}
+                      onClick={() => handleSelect(option.id)}
+                    >
+                      {option.label}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
-            <View style={{ position: "relative" }}>
-              <Pressable style={styles.categoryButton} onPress={toggleMenu}>
-                <Text style={styles.categoryText}>Miembros</Text>
-                <ChevronDown size={16} color="#333" />
-              </Pressable>
+            <View style={styles.categoryButton}>
+              <Text style={styles.categoryText}>Miembros</Text>
+              <ChevronDown size={16} color="#333" />
             </View>
           )}
 
           <View style={styles.searchContainer}>
             <Search size={18} color="#888" style={{ marginLeft: 8 }} />
             <TextInput
-              placeholder={`Busca ${MENU_OPTIONS.find((o) => o.id === selectedMenu)?.label.toLowerCase()}`}
+              placeholder={`Busca ${
+                MENU_OPTIONS.find((opt) => opt.id === selected)?.label.toLowerCase()
+              }`}
               style={styles.searchInput}
               placeholderTextColor="#888"
             />
@@ -106,25 +129,6 @@ export default function Header({ onLoginPress }: HeaderProps) {
         </View>
       </View>
 
-      {menuOpen && (
-        <DropdownPortal style={{ top: `${dropdownTop}px`, left: `${dropdownLeft}px` }}>
-          <div className="lang-dropdown">
-            {MENU_OPTIONS.map((option) => (
-              <div
-                key={option.id}
-                className={`lang-option ${selectedMenu === option.id ? "active" : ""}`}
-                onClick={() => {
-                  setSelectedMenu(option.id);
-                  setMenuOpen(false);
-                }}
-              >
-                {option.label}
-              </div>
-            ))}
-          </div>
-        </DropdownPortal>
-      )}
-
       {/* 🔹 Barra inferior de navegación */}
       <View style={styles.navBar}>
         {[
@@ -136,7 +140,7 @@ export default function Header({ onLoginPress }: HeaderProps) {
           "Electrónica",
           "Entretenimiento",
           "Mascotas",
-          "Sobre Vinted",
+          "Sobre KCL Trading",
           "Nuestra plataforma",
         ].map((item) => (
           <Text key={item} style={styles.navItem}>
@@ -164,7 +168,7 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#0f766e",
+    color: "#007AFF",
   },
   searchSection: {
     flexDirection: "row",
@@ -185,25 +189,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   categoryText: {
-    fontSize: 14,
-    color: "#333",
-  },
-  dropdown: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 6,
-    width: 180,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  dropdownItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
     fontSize: 14,
     color: "#333",
   },
@@ -229,18 +214,18 @@ const styles = StyleSheet.create({
   },
   linkButton: {
     borderWidth: 1,
-    borderColor: "#0f766e",
+    borderColor: "#007AFF",
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
   },
   linkText: {
     fontSize: 14,
-    color: "#0f766e",
+    color: "#007AFF",
     fontWeight: "500",
   },
   sellButton: {
-    backgroundColor: "#0f766e",
+    backgroundColor: "#007AFF",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 6,

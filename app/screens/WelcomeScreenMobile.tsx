@@ -195,7 +195,7 @@ const loginWithGoogleToken = async (token: string) => {
           style={styles.primaryButton}
           onPress={() => setShowRegisterOptions(true)}
         >
-          <Text style={styles.primaryText}>Crea tu perfil en Vinted</Text>
+          <Text style={styles.primaryText}>Crea tu perfil en KCL Trading</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
