@@ -1,18 +1,18 @@
 // app/welcome.tsx
 import { View, Text, StyleSheet, Pressable, Platform } from "react-native";
 import { useState, useEffect } from "react";
-import { usePathname } from "expo-router"; // 👈 Importar
+import { usePathname } from "expo-router";
 import AuthModal from "../components/web/ScreensModal/AuthModalWeb";
 import Header from "../components/web/Header";
 import HeroSection from "../components/web/HeroSection";
 
 export default function WelcomeScreen() {
   const [showModal, setShowModal] = useState(false);
-  const pathname = usePathname(); // 👈 Obtener ruta actual
+  const pathname = usePathname();
 
   useEffect(() => {
     if (pathname !== "/welcome") {
-      setShowModal(false); // 👈 Cerrar modal si navegas a otra ruta
+      setShowModal(false);
     }
   }, [pathname]);
 
@@ -46,13 +46,12 @@ export default function WelcomeScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
     position: "relative",
-    overflow: "visible", // ✅ necesario para que los dropdowns puedan salir
+    overflow: "visible",
   },
   topRight: {
     alignItems: "flex-end",
@@ -68,6 +67,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  title: { fontSize: 28, fontWeight: "bold", marginBottom: 10 },
-  subtitle: { fontSize: 16, textAlign: "center", paddingHorizontal: 40 },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: "center",
+    paddingHorizontal: 40,
+  },
 });

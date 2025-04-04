@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { ChevronDown, Search, HelpCircle } from "lucide-react";
 import LanguageSelector from "./LanguageSelector";
-import DropdownPortal from "./DropdownPortal";
 import "./LanguageSelector.css"; // reutilizamos el mismo estilo
 
 const MENU_OPTIONS = [

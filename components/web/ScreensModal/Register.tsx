@@ -164,7 +164,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   input: {
     width: "100%",
-    padding: "12px 14px",
+    padding: "12px 3px",
     borderRadius: 8,
     border: "1px solid #ccc",
     marginBottom: 14,
@@ -196,7 +196,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: "#333",
   },
   link: {
-    color: "#0f766e",
+    color: "#007AFF",
     textDecoration: "underline",
   },
   submitButton: {
@@ -212,7 +212,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   helpLink: {
     marginTop: 16,
     textAlign: "center",
-    color: "#0f766e",
+    color: "#007AFF",
     fontSize: 14,
     cursor: "pointer",
     fontWeight: "500",

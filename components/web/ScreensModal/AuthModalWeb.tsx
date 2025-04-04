@@ -1,12 +1,14 @@
 // components/web/AuthModalWeb.tsx
 import { View, Modal, Text, Pressable, StyleSheet } from "react-native";
 import { FontAwesome, AntDesign } from "@expo/vector-icons";
-import { useState } from "react";
-import { useRouter } from "expo-router"; // Necesario para redirección
-import RegisterScreen from "../ScreensModal/Register";
-import { usePathname } from "expo-router";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 
+import RegisterScreen from "../ScreensModal/Register";
+import LoginScreen from "../ScreensModal/Login";
+import { useGoogleAuth, useFacebookAuth } from "@/hooks/auth/useSocialAuth";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function AuthModalWeb({
   visible,
@@ -15,53 +17,98 @@ export default function AuthModalWeb({
   visible: boolean;
   onClose: () => void;
 }) {
-  const [showRegister, setShowRegister] = useState(false);
-  const router = useRouter(); // Importante
+  const router = useRouter();
+  const login = useAuthStore((state) => state.login);
 
-  // ✅ Maneja el éxito del registro
+  const [showRegister, setShowRegister] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+
+  const {
+    promptAsync: googlePrompt,
+    response: googleResponse,
+  } = useGoogleAuth();
+  const {
+    promptAsync: facebookPrompt,
+    response: facebookResponse,
+  } = useFacebookAuth();
+
   const handleRegisterSuccess = (email: string) => {
     setShowRegister(false);
-    onClose(); // Cierra el modal
+    onClose();
     setTimeout(() => {
       router.push({
-          pathname: "/email-verification/[email]",
-          params: { email },
-        });
-            }, 100);
+        pathname: "/email-verification/[email]",
+        params: { email },
+      });
+    }, 100);
   };
+
+  const handleClose = () => {
+    setShowRegister(false);
+    setShowLogin(false);
+    onClose();
+  };
+
+  useEffect(() => {
+    const handleGoogleLogin = async () => {
+      if (googleResponse?.type === "success" && googleResponse.authentication?.accessToken) {
+        console.log("✅ Google Auth Response:", googleResponse); // ⬅️ VERIFICA AQUÍ
+        await SecureStore.setItemAsync("token", googleResponse.authentication.accessToken);
+        login(googleResponse.authentication.accessToken, {
+          username: "GoogleUser",
+          email: "googleuser@demo.com",
+          id: "google123",
+        });
+        handleClose();
+        router.replace("/(tabs)");
+      }
+    };
+    handleGoogleLogin();
+  }, [googleResponse]);
+
+  useEffect(() => {
+    const handleFacebookLogin = async () => {
+      if (facebookResponse?.type === "success" && facebookResponse.authentication?.accessToken) {
+        await SecureStore.setItemAsync("token", facebookResponse.authentication.accessToken);
+        login(facebookResponse.authentication.accessToken, {
+          username: "FacebookUser",
+          email: "facebookuser@demo.com",
+          id: "facebook123",
+        });
+        handleClose();
+        router.replace("/(tabs)");
+      }
+    };
+    handleFacebookLogin();
+  }, [facebookResponse]);
 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          {/* Botón de cierre */}
-          <Pressable
-            onPress={() => {
-              setShowRegister(false);
-              onClose();
-            }}
-            style={styles.closeBtn}
-          >
+          <Pressable onPress={handleClose} style={styles.closeBtn}>
             <Text style={{ fontSize: 22 }}>✕</Text>
           </Pressable>
 
           {showRegister ? (
             <RegisterScreen
               onClose={() => setShowRegister(false)}
-              onSuccess={handleRegisterSuccess} // ✅ Aquí se pasa la función
+              onSuccess={handleRegisterSuccess}
             />
+          ) : showLogin ? (
+            <LoginScreen onClose={() => setShowLogin(false)} />
           ) : (
             <>
               <Text style={styles.title}>
                 Únete y vende la ropa que no te pones sin pagar comisión
               </Text>
 
-              <Pressable style={styles.socialBtn}>
+              <Pressable style={styles.socialBtn} onPress={() => googlePrompt({useProxy: true} as any)}>
                 <AntDesign name="google" size={18} color="#DB4437" />
                 <Text style={styles.socialText}>Continuar con Google</Text>
               </Pressable>
 
-              <Pressable style={styles.socialBtn}>
+              <Pressable style={styles.socialBtn} onPress={() => facebookPrompt({useProxy: true} as any)}>
                 <FontAwesome name="facebook" size={18} color="#1877F2" />
                 <Text style={[styles.socialText, { color: "#1877F2" }]}>
                   Continuar con Facebook
@@ -73,16 +120,15 @@ export default function AuthModalWeb({
               <View style={styles.linkGroup}>
                 <Text style={styles.linkText}>
                   ¿No tienes cuenta?{" "}
-                  <Text
-                    style={styles.link}
-                    onPress={() => setShowRegister(true)}
-                  >
+                  <Text style={styles.link} onPress={() => setShowRegister(true)}>
                     Regístrate
                   </Text>
                 </Text>
                 <Text style={styles.linkText}>
                   ¿Ya tienes una cuenta?{" "}
-                  <Text style={styles.link}>Inicia sesión</Text>
+                  <Text style={styles.link} onPress={() => setShowLogin(true)}>
+                    Inicia sesión
+                  </Text>
                 </Text>
               </View>
             </>
@@ -92,7 +138,6 @@ export default function AuthModalWeb({
     </Modal>
   );
 }
-
 
 const styles = StyleSheet.create({
   overlay: {
