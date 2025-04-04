@@ -57,7 +57,8 @@
     "react-native-webview": "13.12.5",
     "react-spring": "^9.7.5",
     "undefined": "expo-auth-session/providers/google",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.3",
+    "expo-updates": "~0.27.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
