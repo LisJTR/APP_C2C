@@ -1,51 +1,91 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
-import { useNavigation } from "expo-router";
+import React, { useState,  useLayoutEffect } from "react";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput } from "react-native";
+import { useTranslation } from "react-i18next";
+import { useRouter } from "expo-router";
 
-const categories = [
-  { id: "1", name: "👕 Ropa", screen: "ropa" },
-  { id: "2", name: "👟 Zapatos", screen: "zapatos" },
-  { id: "3", name: "🎒 Accesorios", screen: "accesorios" },
-  { id: "4", name: "📱 Electrónica", screen: "electronica" },
-  { id: "5", name: "🏠 Hogar", screen: "hogar" },
-  { id: "6", name: "🐶 Mascotas", screen: "mascotas" },
-  { id: "7", name: "🙍 Mujer", screen: "mujer" },
-  { id: "8", name: "🙍‍♂️ Hombre", screen: "hombre" },
-  { id: "9", name: "👶 Niños", screen: "ninos" },
+
+const rawCategories = [
+  { id: "1", key: "clothes", screen: " clothes" },
+  { id: "2", key :"shoes", screen: "shoes" },
+  { id: "3", key: "accessories", screen: "accessories" },
+  { id: "4", key: "electronics", screen: "electronics" },
+  { id: "5", key: "home", screen: "home" },
+  { id: "6", key: "petss", screen: "petss" },
+  { id: "7", key: "woman", screen: "woman" },
+  { id: "8", key: "man", screen: "man" },
+  { id: "9", key: "children", screen: "children" },
 ];
 
+
 export default function ExploreScreen() {
-  const navigation = useNavigation();
+  const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+
+
+
+  const categories = rawCategories
+    .map((item) => ({
+      ...item,
+      name: t(`explore.categories.${item.key}`),
+    }))
+    .filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Explorar Categorías</Text>
+      <TextInput
+        style={styles.searchInput}
+        placeholder={t("explore.searchPlaceholder")}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+
+      <Text style={styles.title}>{t("explore.title")}</Text>
+
       <FlatList
         data={categories}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.categoryButton}
-            onPress={() => alert(`Navegando a ${item.name}`)} // Aquí se conecta con la pantalla correspondiente
+            onPress={() =>
+              router.push({
+                pathname: "/category/[category]",
+                params: { category: item.screen },
+              })
+            }
+
           >
             <Text style={styles.categoryText}>{item.name}</Text>
           </TouchableOpacity>
         )}
+      
       />
+      
     </View>
   );
+  
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingTop: 60,
+    paddingHorizontal: 20,
     backgroundColor: "#fff",
+  },
+  searchInput: {
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 10,
     textAlign: "center",
   },
   categoryButton: {

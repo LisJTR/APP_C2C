@@ -8,11 +8,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { loginUser } from "../../api/api";
 import { useAuthStore } from "../../store/useAuthStore";
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
+
+
 
 export default function LoginScreen() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
   const iconScale = useSharedValue(1);
+  const { t } = useTranslation();
 
 const animatedIconStyle = useAnimatedStyle(() => ({
   transform: [{ scale: iconScale.value }],
@@ -30,17 +34,17 @@ const animatedIconStyle = useAnimatedStyle(() => ({
   const validateFields = () => {
     let valid = true;
     if (!emailOrUser.trim()) {
-      setEmailError("Este campo no puede estar vacío");
+      setEmailError(t("loginScreen.emptyField"));
       valid = false;
     } else if (emailOrUser.includes("@") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOrUser)) {
-      setEmailError("El correo no es válido");
+      setEmailError(t("loginScreen.invalidEmail"));
       valid = false;
     } else {
       setEmailError("");
     }
 
     if (!password.trim()) {
-      setPasswordError("Este campo no puede estar vacío");
+      setPasswordError(t("loginScreen.emptyField"));
       valid = false;
     } else {
       setPasswordError("");
@@ -58,9 +62,9 @@ const animatedIconStyle = useAnimatedStyle(() => ({
 
     if (result.token && result.user) {
       login(result.token, result.user);
-      router.replace("/(tabs)");
+      router.replace("./(tabs)");
     } else {
-      alert(result.message || "Credenciales incorrectas.");
+      alert(result.message || t("loginScreen.loginError"));
     }
   };
 
@@ -71,10 +75,10 @@ const animatedIconStyle = useAnimatedStyle(() => ({
         <Ionicons name="arrow-back" size={24} color="#000" />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Usuario</Text>
+      <Text style={styles.title}>{t("loginScreen.userTitle")}</Text>
 
       <TextInput
-        placeholder="Nombre de usuario o e-mail"
+        placeholder= {t("loginScreen.placeholderUser")}
         placeholderTextColor="#555"
         style={styles.input}
         value={emailOrUser}
@@ -84,7 +88,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
 
       <View style={styles.passwordContainer}>
         <TextInput
-          placeholder="Contraseña"
+          placeholder= {t("loginScreen.placeholderPassword")}
           placeholderTextColor="#555"
           value={password}
           onChangeText={setPassword}
@@ -116,16 +120,16 @@ const animatedIconStyle = useAnimatedStyle(() => ({
         <ActivityIndicator size="large" color="#00786F" style={{ marginTop: 15 }} />
       ) : (
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Inicia sesión</Text>
+          <Text style={styles.buttonText}>{t("loginScreen.loginBtn")}</Text>
         </TouchableOpacity>
       )}
 
       <TouchableOpacity>
-        <Text style={styles.link}>¿Olvidaste tu contraseña?</Text>
+        <Text style={styles.link}>{t("loginScreen.forgotPassword")}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity>
-        <Text style={styles.helpText}>¿Necesitas ayuda?</Text>
+        <Text style={styles.helpText}>{t("loginScreen.needHelp")}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

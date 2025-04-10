@@ -11,7 +11,7 @@ import pt from "../app/locales/pt";
 i18n
   .use(initReactI18next)
   .init({
-    lng: Localization.locale.slice(0, 2), // Detecta idioma del dispositivo (es, en, pt, etc)
+    lng: Localization.locale.slice(0, 2), // Detecta idioma del dispositivo (es, en, pt)
     fallbackLng: "es",
     resources: {
       es: { translation: es },
