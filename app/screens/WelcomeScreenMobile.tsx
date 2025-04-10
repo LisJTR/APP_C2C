@@ -15,7 +15,8 @@ import { useEffect } from "react";
 import axios from "axios";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useGoogleAuth } from "../../hooks/useGoogleAuth";
-
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 
 
 const images = [
@@ -37,7 +38,7 @@ export default function WelcomeScreenMobile() {
   const [selectedLanguage, setSelectedLanguage] = useState("es");
   const [showRegisterOptions, setShowRegisterOptions] = useState(false);
   const [showLoginOptions, setShowLoginOptions] = useState(false);
-
+  const { t } = useTranslation();
 
   const languages = [
     { code: "es", label: "Español", sub: "Spanish" },
@@ -64,10 +65,10 @@ const loginWithGoogleToken = async (token: string) => {
 
     const { token: jwt, user } = res.data;
     useAuthStore.getState().login(jwt, user);
-    router.replace("/(tabs)");
+    router.replace("./(tabs)");
   } catch (error) {
-    console.error("❌ Error en login con Google:", error);
-    alert("Error al iniciar sesión con Google.");
+    console.error( t("welcomeScreenMobile.errorLoginGoogle"), error);
+    alert(t("welcomeScreenMobile.errorlogin"));
   }
 };
 
@@ -81,8 +82,8 @@ const loginWithGoogleToken = async (token: string) => {
             🌐 {languages.find((l) => l.code === selectedLanguage)?.label}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.replace("/(tabs)")}>
-          <Text style={styles.skip}>Saltar</Text>
+        <TouchableOpacity onPress={() => router.replace("/(tabs)/home")}>
+          <Text style={styles.skip}>{t("welcomeScreenMobile.skip")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -101,28 +102,28 @@ const loginWithGoogleToken = async (token: string) => {
   </TouchableOpacity>
 </View>
 
-      <Text style={styles.modalTitle}>Regístrate en KCL</Text>
-      <Text style={styles.modalSubtitle}>Usa tu cuenta para comenzar.</Text>
+      <Text style={styles.modalTitle}>{t("welcomeScreenMobile.register")}</Text>
+      <Text style={styles.modalSubtitle}>{t("welcomeScreenMobile.begin")}</Text>
 
       <TouchableOpacity style={styles.socialButton} onPress={() => googleLogin()}>
   <View style={styles.socialContent}>
     <FontAwesome name="google" size={20} color="#DB4437" style={styles.icon} />
-    <Text style={styles.socialText}>Continuar con Google</Text>
+    <Text style={styles.socialText}>{t("welcomeScreenMobile.continueGoogle")}</Text>
   </View>
 </TouchableOpacity>
 
 <TouchableOpacity style={styles.socialButton}>
   <View style={styles.socialContent}>
     <FontAwesome name="facebook" size={20} color="#1877F2" style={styles.icon} />
-    <Text style={styles.socialText}>Continuar con Facebook</Text>
+    <Text style={styles.socialText}>{t("welcomeScreenMobile.continueFacebook")}</Text>
   </View>
 </TouchableOpacity>
 
       <TouchableOpacity onPress={() => {
         setShowRegisterOptions(false);
-        router.push("/screens/RegisterScreen");
+        router.push("./screens/RegisterScreen");
       }}>
-        <Text style={styles.emailLink}>Continuar con e-mail</Text>
+        <Text style={styles.emailLink}>{t("welcomeScreenMobile.continueEmail")}</Text>
       </TouchableOpacity>
     </View>
   </View>
@@ -146,27 +147,27 @@ const loginWithGoogleToken = async (token: string) => {
 
 
 
-      <Text style={styles.modalTitle}>Inicia sesión en KCL</Text>
+      <Text style={styles.modalTitle}>{t("welcomeScreenMobile.register")}</Text>
 
       <TouchableOpacity style={styles.socialButton} onPress={() => googleLogin()}>
   <View style={styles.socialContent}>
     <FontAwesome name="google" size={20} color="#DB4437" style={styles.icon} />
-    <Text style={styles.socialText}>Continuar con Google</Text>
+    <Text style={styles.socialText}>{t("welcomeScreenMobile.continueGoogle")}</Text>
   </View>
 </TouchableOpacity>
 
 <TouchableOpacity style={styles.socialButton}>
   <View style={styles.socialContent}>
     <FontAwesome name="facebook" size={20} color="#1877F2" style={styles.icon} />
-    <Text style={styles.socialText}>Continuar con Facebook</Text>
+    <Text style={styles.socialText}>{t("welcomeScreenMobile.continueFacebook")}</Text>
   </View>
 </TouchableOpacity>
 
       <TouchableOpacity onPress={() => {
         setShowLoginOptions(false);
-        router.push("/screens/LoginScreen");
+        router.push("./screens/LoginScreen");
       }}>
-        <Text style={styles.emailLink}>Continuar con e-mail</Text>
+        <Text style={styles.emailLink}>{t("welcomeScreenMobile.continueEmail")}</Text>
       </TouchableOpacity>
     </View>
   </View>
@@ -188,29 +189,29 @@ const loginWithGoogleToken = async (token: string) => {
       {/* Mensaje central */}
       <View style={styles.textContainer}>
         <Text style={styles.title}>
-          Únete y vende los artículos que ya no usas
+        {t("welcomeScreenMobile.textInf")}
         </Text>
 
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={() => setShowRegisterOptions(true)}
         >
-          <Text style={styles.primaryText}>Crea tu perfil en KCL Trading</Text>
+          <Text style={styles.primaryText}>{t("welcomeScreenMobile.textCreateProfile")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() => setShowLoginOptions(true)}
         >
-          <Text style={styles.secondaryText}>Ya tengo una cuenta</Text>
+          <Text style={styles.secondaryText}>{t("welcomeScreenMobile.haveAnAccount")}</Text>
         </TouchableOpacity>
 
         <Text style={styles.footer}>
-          Sobre KCL Trading:{" "}
+        {t("welcomeScreenMobile.about")}{" "}
           <Text
             style={{ color: "#007AFF", textDecorationLine: "underline" }}
           >
-            Nuestra plataforma
+            {t("welcomeScreenMobile.textPlatform")}
           </Text>
         </Text>
       </View>
@@ -219,13 +220,16 @@ const loginWithGoogleToken = async (token: string) => {
       <Modal visible={languageModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.languageModal}>
-            <Text style={styles.modalTitle}>Cambiar idioma</Text>
+            <Text style={styles.modalTitle}>{t("welcomeScreenMobile.changeLanguage")}</Text>
 
             {languages.map((lang) => (
               <TouchableOpacity
                 key={lang.code}
                 style={styles.languageOption}
-                onPress={() => setSelectedLanguage(lang.code)}
+                onPress={() => {
+                  i18n.changeLanguage(lang.code);      // cambia el idioma de toda la app
+                  setSelectedLanguage(lang.code);      // cambia el botón seleccionado
+                }}
               >
                 <Text style={styles.languageLabel}>
                   {lang.label}{" "}
@@ -243,11 +247,11 @@ const loginWithGoogleToken = async (token: string) => {
               style={styles.primaryButton}
               onPress={() => setLanguageModalVisible(false)}
             >
-              <Text style={styles.primaryText}>Guardar</Text>
+              <Text style={styles.primaryText}>{t("welcomeScreenMobile.save")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
-              <Text style={styles.modalCancel}>Cerrar</Text>
+              <Text style={styles.modalCancel}>{t("welcomeScreenMobile.close")}</Text>
             </TouchableOpacity>
           </View>
         </View>

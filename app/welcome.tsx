@@ -5,11 +5,15 @@ import { usePathname } from "expo-router";
 import AuthModal from "../components/web/ScreensModal/AuthModalWeb";
 import Header from "../components/web/Header";
 import HeroSection from "../components/web/HeroSection";
+import { useTranslation } from "react-i18next";
+
+
 
 export default function WelcomeScreen() {
   const [showModal, setShowModal] = useState(false);
   const pathname = usePathname();
-
+  const { t } = useTranslation();
+  
   useEffect(() => {
     if (pathname !== "/welcome") {
       setShowModal(false);
@@ -28,14 +32,14 @@ export default function WelcomeScreen() {
         <>
           <View style={styles.topRight}>
             <Pressable onPress={() => setShowModal(true)}>
-              <Text style={styles.loginText}>Regístrate | Inicia Sesión</Text>
+              <Text style={styles.loginText}> {t("welcomeScreen.register")} | {t("welcomeScreen.login")}</Text>
             </Pressable>
           </View>
 
           <View style={styles.content}>
-            <Text style={styles.title}>Bienvenido a Vinted Ecuador 👋</Text>
+            <Text style={styles.title}>{t("welcomeScreen.welcome")}</Text>
             <Text style={styles.subtitle}>
-              Compra y vende ropa de segunda mano con facilidad.
+            {t("welcomeScreen.textWelcome")}
             </Text>
           </View>
         </>

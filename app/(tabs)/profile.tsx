@@ -1,20 +1,24 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
 import { useAuthStore } from "../../store/useAuthStore"; // Asegura la ruta correcta
+import { useTranslation } from "react-i18next";
+
+
 
 export default function ProfileScreen() {
   const { user } = useAuthStore();
   const [username, setUsername] = useState(user?.username || ""); // ✅ Agregado
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>👤 Perfil</Text>
-      <Text style={styles.subtitle}>Aquí puedes ver y editar tu información.</Text>
+      <Text style={styles.title}>{t("profile.title")}</Text>
+      <Text style={styles.subtitle}>{t("profile.subtitle")}</Text>
       
       {/* Campo para editar nombre de usuario */}
       <TextInput
         style={styles.input}
-        placeholder="Nombre de usuario"
+        placeholder={t("profile.placeholder")}
         value={username}
         onChangeText={setUsername}
       />

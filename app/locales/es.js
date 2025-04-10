@@ -1,3 +1,5 @@
+import { changeLanguage } from "i18next";
+
 export default {
     tab: {
       home: "Inicio",
@@ -6,21 +8,30 @@ export default {
     },
     explore: {
       title: "Explorar Categorías",
+      searchPlaceholder: "Buscar categorías...",
       categories: {
-        ropa: "👕 Ropa",
-        zapatos: "👟 Zapatos",
-        accesorios: "🎒 Accesorios",
-        electronica: "📱 Electrónica",
-        hogar: "🏠 Hogar",
-        mascotas: "🐶 Mascotas",
-        mujer: "🙍 Mujer",
-        hombre: "🙍‍♂️ Hombre",
-        ninos: "👶 Niños",
+        clothes: "👕 Ropa",
+        shoes: "👟 Zapatos",
+        accessories: "🎒 Accesorios",
+        electronics: "📱 Electrónica",
+        home: "🏠 Hogar",
+        petss: "🐶 Mascotas",
+        woman: "🙍 Mujer",
+        man: "🙍‍♂️ Hombre",
+        children: "👶 Niños",
       },
     },
-    home: {
-      welcome: "¡Bienvenido a Vinted Ecuador! 👕",
+    home:{
+      welcome: "¡Bienvenido!",
       subtitle: "Compra y vende ropa fácilmente",
+      search: "Buscar",
+      category: {
+        woman: "Mujer",
+        man: "Hombre",
+        kids: "Niños",
+        home: "Hogar",
+      },
+      newProducts: "PRODUCTOS NUEVOS"
     },
     profile: {
       title: "👤 Perfil",
@@ -42,6 +53,7 @@ export default {
       loginError: "Credenciales incorrectas.",
       registerSuccess: "Registro exitoso",
       registerError: "No se pudo registrar.",
+      messageSuccess: "Ya puedes iniciar sesión"
     },
     loginScreen: {
       userTitle: "Usuario",
@@ -52,6 +64,7 @@ export default {
       loginBtn: "Inicia sesión",
       forgotPassword: "¿Olvidaste tu contraseña?",
       needHelp: "¿Necesitas ayuda?",
+      loginError: "Credenciales incorrectas."
     },
     registerScreen: {
       title: "Regístrate",
@@ -69,6 +82,46 @@ export default {
       terms: "Al registrarme, confirmo que acepto los Términos y condiciones, he leído la Política de privacidad y tengo al menos 18 años.",
       registerBtn: "Regístrate",
       needHelp: "¿Necesitas ayuda?",
+      registerError: "No se pudo registrar."
     },
+    welcomeScreenMobile: {
+      register: "Regístrate en KCL",
+      begin:"Usa tu cuenta para comenzar",
+      continueGoogle:"Continuar con Google",
+      continueFacebook:"Continuar con Facebook",
+      continueEmail:"Continuar con Email",
+      skip: "Saltar",
+      changeLanguage:"Cambiar idioma",
+      save:"Guardar",
+      close:"cerrar sesion",
+      textInf:"Únete y vende  artículos que no necesitas",
+      textCreateProfile:"Crea tu perfil en KCL Trading",
+      textPlatform:"Nuestra plataforma",
+      haveAnAccount:"Ya tengo una cuenta",
+      about: " Sobre KCL Trading:",
+      errorlogin: "Error al iniciar sesión con Google",
+      errorLoginGoogle: "Error en login con Google",
+      
+
+    },
+    welcomeScreen: {
+      register: "Regístrate", 
+      login: "Iniciar Sesión",
+      welcome: "¡Bienvenido!",
+      textWelcome: "Compra y vende ropa de segunda mano con facilidad",
+    },
+    messages: {
+      title: "Mensajes",
+      subtitle: "Aquí verás todas tus conversaciones",
+    },
+    sell: {
+      title: "Vende un producto",
+      subtitle: "Publica lo que ya no usas",
+    },
+    category: {
+      title: "Productos en: {{category}}",
+      empty: "No hay productos en esta categoría todavía"
+    }
+    
   };
   

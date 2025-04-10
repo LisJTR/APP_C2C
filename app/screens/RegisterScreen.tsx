@@ -7,6 +7,8 @@ import { registerUser } from "../../api/api";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
+
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -24,6 +26,7 @@ export default function RegisterScreen() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const iconScale = useSharedValue(1);
+  const { t } = useTranslation();
 
 const animatedIconStyle = useAnimatedStyle(() => ({
   transform: [{ scale: iconScale.value }],
@@ -34,11 +37,11 @@ const animatedIconStyle = useAnimatedStyle(() => ({
   const validateUsername = (value: string) => {
     setUsername(value);
     if (!value.trim()) {
-      setUsernameError("El nombre de usuario no puede quedar en blanco");
+      setUsernameError(t("registerScreen.errorUsernameEmpty"));
     } else if (value.length < 3 || value.length > 20) {
-      setUsernameError("Debe tener entre 3 y 20 caracteres");
+      setUsernameError(t("registerScreen.errorUsernameLength"));
     } else if (!/^[a-zA-Z0-9]+$/.test(value)) {
-      setUsernameError("Solo puede incluir letras y números");
+      setUsernameError(t("registerScreen.errorUsernameInvalid"));
     } else {
       setUsernameError("");
     }
@@ -47,9 +50,9 @@ const animatedIconStyle = useAnimatedStyle(() => ({
   const validateEmail = (value: string) => {
     setEmail(value);
     if (!value.trim()) {
-      setEmailError("Introduce e-mail para continuar");
+      setEmailError(t("registerScreen.errorEmailEmpty"));
     } else if (!value.includes("@") || !value.includes(".")) {
-      setEmailError("E-mail es incorrecto");
+      setEmailError(t("registerScreen.errorEmailInvalid"));
     } else {
       setEmailError("");
     }
@@ -58,9 +61,9 @@ const animatedIconStyle = useAnimatedStyle(() => ({
   const validatePassword = (value: string) => {
     setPassword(value);
     if (!value.trim()) {
-      setPasswordError("La contraseña no puede quedar en blanco");
+      setPasswordError(t("registerScreen.errorPasswordEmpty"));
     } else if (value.length < 6) {
-      setPasswordError("Debe tener al menos 6 caracteres");
+      setPasswordError(t("registerScreen.errorPasswordShort"));
     } else {
       setPasswordError("");
     }
@@ -78,9 +81,9 @@ const animatedIconStyle = useAnimatedStyle(() => ({
     setIsLoading(false);
 
     if (result.user) {
-      router.replace("/screens/LoginScreen");
+      router.replace("./screens/LoginScreen");
     } else {
-      alert(result.message || "No se pudo registrar.");
+      alert(result.message || t("registerScreen.registerError"));
     }
   };
 
@@ -91,10 +94,10 @@ const animatedIconStyle = useAnimatedStyle(() => ({
       <Ionicons name="arrow-back" size={22} color="#555" />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Regístrate</Text>
+      <Text style={styles.title}>{t("registerScreen.title")}</Text>
 
       <TextInput
-        placeholder="Nombre de usuario"
+        placeholder={t("registerScreen.usernamePlaceholder")}
          placeholderTextColor="#555"
         style={styles.input}
         value={username}
@@ -103,7 +106,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
       {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
 
       <TextInput
-        placeholder="E-mail"
+        placeholder= {t("registerScreen.emailPlaceholder")}
         placeholderTextColor="#555"
         style={styles.input}
         value={email}
@@ -114,7 +117,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
 
       <View style={styles.passwordContainer}>
   <TextInput
-    placeholder="Contraseña"
+    placeholder= {t("registerScreen.passwordPlaceholder")}
     placeholderTextColor="#555"
     style={styles.passwordInput}
     value={password}
@@ -148,7 +151,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
           {offersChecked && <View style={styles.checkboxChecked} />}
         </View>
         <Text style={styles.checkboxText}>
-          Quiero recibir ofertas personalizadas y novedades por e-mail.
+          {t("registerScreen.offers")}
         </Text>
       </Pressable>
 
@@ -157,9 +160,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
           {termsChecked && <View style={styles.checkboxChecked} />}
         </View>
         <Text style={styles.checkboxText}>
-          Al registrarme, confirmo que acepto los{" "}
-          <Text style={styles.link}>Términos y condiciones</Text>, he leído la{" "}
-          <Text style={styles.link}>Política de privacidad</Text> y tengo al menos 18 años.
+          {t("registerScreen.terms")}
         </Text>
       </Pressable>
 
@@ -177,12 +178,12 @@ const animatedIconStyle = useAnimatedStyle(() => ({
             !termsChecked || !!usernameError || !!emailError || !!passwordError || !username || !email || !password
           }
         >
-          <Text style={styles.buttonText}>Regístrate</Text>
+          <Text style={styles.buttonText}>{t("registerSceen.registerBtn")}</Text>
         </TouchableOpacity>
       )}
 
       <TouchableOpacity>
-        <Text style={styles.helpText}>¿Necesitas ayuda?</Text>
+        <Text style={styles.helpText}>{t("registerScreen.needHelp")}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
