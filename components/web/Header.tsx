@@ -122,7 +122,7 @@ export default function Header({ onLoginPress }: HeaderProps) {
         {/* Botones de acción */}
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.linkButton} onPress={onLoginPress}>
-            <Text style={styles.linkText}>Regístrate | Inicia sesión</Text>
+            <Text style={styles.linkText}>Regístrate | Inicia sesiónnnnn</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sellButton}>
             <Text style={styles.sellText}>Vender ahora</Text>
