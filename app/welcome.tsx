@@ -27,6 +27,11 @@ export default function WelcomeScreen() {
           <View style={{ position: "relative", zIndex: 10 }}>
             <Header onLoginPress={() => setShowModal(true)} />
           </View>
+
+          {/* 👇 HeroSection aquí debajo del Header */}
+          <View style={styles.heroContainer}>
+            <HeroSection onLoginPress={() => setShowModal(true)} />
+          </View>
         </>
       ) : (
         <>
@@ -80,5 +85,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     paddingHorizontal: 40,
+  },
+  heroContainer: {
+    marginTop: 20,
   },
 });

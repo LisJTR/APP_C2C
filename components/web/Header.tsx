@@ -56,7 +56,13 @@ export default function Header({ onLoginPress }: HeaderProps) {
     <>
       <View style={styles.topBar}>
         {/* Logo */}
-        <Text style={styles.logo}>KCL Trading</Text>
+        <a href="/welcome" style={styles.logoLink}>
+        <img
+          src="https://i.imgur.com/6k1EXFk.png"
+           alt="KCL Trading Logo"
+          style={styles.logoImage}
+           />
+        </a>
 
         {/* Categoría + Buscador */}
         <View style={styles.searchSection}>
@@ -116,7 +122,7 @@ export default function Header({ onLoginPress }: HeaderProps) {
         {/* Botones de acción */}
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.linkButton} onPress={onLoginPress}>
-            <Text style={styles.linkText}>Regístrate | Inicia sesión</Text>
+            <Text style={styles.linkText}>Regístrate | Inicia sesiónnnnn</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sellButton}>
             <Text style={styles.sellText}>Vender ahora</Text>
@@ -164,11 +170,6 @@ const styles = StyleSheet.create({
     gap: 12,
     flexWrap: "wrap",
   },
-  logo: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#007AFF",
-  },
   searchSection: {
     flexDirection: "row",
     alignItems: "center",
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f1f5f9",
     borderRadius: 6,
-    paddingRight: 10,
+    // paddingRight: 0,
   },
   searchInput: {
     flex: 1,
@@ -210,6 +211,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    paddingRight: 100,
   },
   linkButton: {
     borderWidth: 1,
@@ -253,4 +255,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#374151",
   },
+  logoLink: {
+    display: "flex",
+    alignItems: "center",
+    cursor: "pointer",
+  },
+  logoImage: {
+    width: 200, // más ancho
+    height: 60, // más alto
+    marginLeft: 150, // empuja el logo a la derecha
+    marginRight: 0,
+    objectFit: "contain", // asegura que se vea bien
+  },   
 });
+
+// Este bloque lo insertamos dinámicamente para el efecto hover
+if (typeof document !== "undefined") {
+  const styleSheet = document.createElement("style");
+  styleSheet.innerHTML = `
+    a:hover img {
+      transform: scale(1.05);
+    }
+  `;
+  document.head.appendChild(styleSheet);
+}

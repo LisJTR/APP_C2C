@@ -4,8 +4,12 @@ import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import pool from "../config/db.js";
 import axios from "axios";
+import { sendVerificationEmail } from "../utils/emailService.js";
+import crypto from "crypto";
 
 const router = express.Router();
+const verificationCode = crypto.randomBytes(3).toString("hex").toUpperCase(); // Ej: "3F6A9B"
+
 
 // Registro
 router.post(
@@ -33,9 +37,12 @@ router.post(
       const hashedPassword = await bcrypt.hash(password, salt);
 
       const newUser = await pool.query(
-        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email",
-        [username, email, hashedPassword]
-      );
+        "INSERT INTO users (username, email, password, verification_code) VALUES ($1, $2, $3, $4) RETURNING id, username, email",
+        [username, email, hashedPassword, verificationCode]
+      );      
+
+      // Enviar correo
+    await sendVerificationEmail(email, verificationCode);
 
       res.status(201).json({ message: "Usuario registrado exitosamente", user: newUser.rows[0] });
     } catch (error) {
@@ -146,6 +153,64 @@ router.post("/google", async (req, res) => {
   } catch (error) {
     console.error("❌ Error verificando token de Google:", error.message);
     res.status(401).json({ message: "Token de Google inválido" });
+  }
+});
+
+// Verificación del código enviado por correo
+router.post("/verify-code", async (req, res) => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    return res.status(400).json({ message: "Faltan campos requeridos" });
+  }
+
+  try {
+    const result = await pool.query(
+      "SELECT verification_code FROM users WHERE email = $1",
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    if (result.rows[0].verification_code !== code.toUpperCase()) {
+      return res.status(400).json({ message: "Código incorrecto" });
+    }
+
+    // Podrías actualizar un campo "is_verified" si lo tienes
+    await pool.query("UPDATE users SET is_verified = true WHERE email = $1", [email]);
+
+    res.json({ message: "Código verificado correctamente" });
+  } catch (error) {
+    console.error("Error verificando código:", error);
+    res.status(500).json({ message: "Error en la verificación" });
+  }
+});
+
+router.post("/resend-code", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !/\S+@\S+\.\S+/.test(email)) {
+    return res.status(400).json({ message: "Correo inválido" });
+  }
+
+  try {
+    const code = crypto.randomBytes(3).toString("hex").toUpperCase();
+
+    const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: "No se encontró un usuario con ese correo" });
+    }
+
+    await pool.query("UPDATE users SET verification_code = $1 WHERE email = $2", [code, email]);
+
+    await sendVerificationEmail(email, code);
+
+    res.json({ message: "Código reenviado correctamente" });
+  } catch (err) {
+    console.error("❌ Error al reenviar código:", err);
+    res.status(500).json({ message: "Error al reenviar el código" });
   }
 });
 

@@ -9,6 +9,7 @@ import RegisterScreen from "../ScreensModal/Register";
 import LoginScreen from "../ScreensModal/Login";
 import { useGoogleAuth, useFacebookAuth } from "@/hooks/auth/useSocialAuth";
 import { useAuthStore } from "@/store/useAuthStore";
+import { loginWithGoogle } from "@/api/api";
 
 export default function AuthModalWeb({
   visible,
@@ -52,19 +53,34 @@ export default function AuthModalWeb({
   useEffect(() => {
     const handleGoogleLogin = async () => {
       if (googleResponse?.type === "success" && googleResponse.authentication?.accessToken) {
-        console.log("✅ Google Auth Response:", googleResponse); // ⬅️ VERIFICA AQUÍ
-        await SecureStore.setItemAsync("token", googleResponse.authentication.accessToken);
-        login(googleResponse.authentication.accessToken, {
-          username: "GoogleUser",
-          email: "googleuser@demo.com",
-          id: "google123",
-        });
-        handleClose();
-        router.replace("/(tabs)");
+        try {
+          const result = await loginWithGoogle(googleResponse.authentication.accessToken);
+          console.log("🟢 Resultado backend Google:", result);
+  
+          if (result.token) {
+            await SecureStore.setItemAsync("token", result.token);
+            login(result.token, {
+              id: result.user.id,
+              username: result.user.username,
+              email: result.user.email,
+            });
+  
+            handleClose();
+            router.replace("/(tabs)/profile");
+          } else {
+            alert(result.message || "No se pudo iniciar sesión con Google");
+          }
+        } catch (error) {
+          console.error("❌ Error autenticando con Google:", error);
+          alert("Hubo un problema con Google Sign-In");
+        }
       }
     };
+  
     handleGoogleLogin();
   }, [googleResponse]);
+  
+  
 
   useEffect(() => {
     const handleFacebookLogin = async () => {
@@ -100,15 +116,15 @@ export default function AuthModalWeb({
           ) : (
             <>
               <Text style={styles.title}>
-                Únete y vende la ropa que no te pones sin pagar comisión
+                Únete y vende los productos que no uses sin pagar comisión
               </Text>
 
-              <Pressable style={styles.socialBtn} onPress={() => googlePrompt({useProxy: true} as any)}>
+              <Pressable style={styles.socialBtn} onPress={() => googlePrompt()}>
                 <AntDesign name="google" size={18} color="#DB4437" />
                 <Text style={styles.socialText}>Continuar con Google</Text>
               </Pressable>
 
-              <Pressable style={styles.socialBtn} onPress={() => facebookPrompt({useProxy: true} as any)}>
+              <Pressable style={styles.socialBtn} onPress={() => facebookPrompt()}>
                 <FontAwesome name="facebook" size={18} color="#1877F2" />
                 <Text style={[styles.socialText, { color: "#1877F2" }]}>
                   Continuar con Facebook
