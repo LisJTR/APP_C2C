@@ -75,3 +75,22 @@ export const deleteUser = async (token) => {
     return error.response?.data || { message: "Error al eliminar usuario" };
   }
 };
+export const loginWithGoogle = async (accessToken) => {
+  try {
+    const response = await api.post("/auth/google", {
+      access_token: accessToken,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error login con Google:", error.response?.data || error);
+    return error.response?.data || { message: "Error en el login con Google" };
+  }
+};
+export const resendVerificationCode = async (email) => {
+  try {
+    const response = await axios.post(`${API_URL}/auth/resend-code`, { email });
+    return response.data;
+  } catch (error) {
+    return error.response?.data || { message: "Error al reenviar el código" };
+  }
+};

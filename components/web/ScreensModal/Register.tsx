@@ -3,6 +3,9 @@ import React, { useState } from "react";
 import { X, Eye } from "lucide-react";
 import { animated, useSpring } from "react-spring";
 import { useRouter } from "expo-router";
+import { registerUser } from "@/api/api";
+import { FaSpinner } from "react-icons/fa";
+
 
 export default function RegisterScreen({
   onClose,
@@ -14,36 +17,82 @@ export default function RegisterScreen({
   const [showPassword, setShowPassword] = useState(false);
   const [offers, setOffers] = useState(false);
   const [terms, setTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const eyeAnim = useSpring({
     transform: showPassword ? "scale(1.3)" : "scale(1)",
     config: { tension: 300, friction: 10 },
   });
 
-  const isValid = terms && username && email && password;
-
   const router = useRouter();
 
-  const handleRegister = () => {
-    if (!isValid) return;
-  
-    // Cierra el modal primero
-    onClose();
-  
-    // Espera un pequeño tiempo antes de redirigir
-    setTimeout(() => {
-        router.push({
-            pathname: "/email-verification/[email]",
-            params: { email }
-          });
-              }, 100);
+  const validateUsername = (value: string) => {
+    setUsername(value);
+    if (value.length < 4) {
+      setUsernameError("Debe tener al menos 4 caracteres");
+    } else if (/\s/.test(value)) {
+      setUsernameError("No puede contener espacios");
+    } else {
+      setUsernameError("");
+    }
   };
-  
+
+  const validateEmail = (value: string) => {
+    setEmail(value);
+    if (!/\S+@\S+\.\S+/.test(value)) {
+      setEmailError("Correo electrónico inválido");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  const validatePassword = (value: string) => {
+    setPassword(value);
+    if (value.length < 6) {
+      setPasswordError("Debe tener al menos 6 caracteres");
+    } else if (!/[a-zA-Z]/.test(value) || !/\d/.test(value)) {
+      setPasswordError("Debe contener letras y números");
+    } else {
+      setPasswordError("");
+    }
+  };
+
+  const isValid =
+    terms &&
+    username &&
+    email &&
+    password &&
+    !usernameError &&
+    !emailError &&
+    !passwordError;
+
+  const handleRegister = async () => {
+    if (!isValid) return;
+
+    setLoading(true);
+    try {
+      const result = await registerUser(username, email, password);
+      if (result.user) {
+        onClose();
+        setTimeout(() => onSuccess(email), 100);
+      } else {
+        alert(result.message || "Error al registrar el usuario");
+      }
+    } catch (err) {
+      alert("Error de red o servidor");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={styles.overlay}>
@@ -58,22 +107,24 @@ export default function RegisterScreen({
           style={styles.input}
           placeholder="Nombre de usuario"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => validateUsername(e.target.value)}
         />
+        {usernameError && <small style={styles.error}>{usernameError}</small>}
 
         <input
           style={styles.input}
           placeholder="Correo electrónico"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => validateEmail(e.target.value)}
         />
+        {emailError && <small style={styles.error}>{emailError}</small>}
 
         <div style={styles.passwordWrapper}>
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Contraseña"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => validatePassword(e.target.value)}
             style={{ ...styles.input, marginBottom: 0 }}
           />
           <animated.button
@@ -85,6 +136,7 @@ export default function RegisterScreen({
             </animated.div>
           </animated.button>
         </div>
+        {passwordError && <small style={styles.error}>{passwordError}</small>}
 
         <div style={styles.checkboxRow} onClick={() => setOffers(!offers)}>
           <input type="checkbox" checked={offers} readOnly />
@@ -99,15 +151,15 @@ export default function RegisterScreen({
         >
           <input type="checkbox" checked={terms} readOnly />
           <span style={styles.checkboxLabel}>
-            Al registrarme, acepto los{" "}
+            Acepto los{" "}
             <a href="#" style={styles.link}>
               términos y condiciones
-            </a>
-            , he leído la{" "}
+            </a>{" "}
+            y la{" "}
             <a href="#" style={styles.link}>
               política de privacidad
-            </a>{" "}
-            y tengo al menos 18 años.
+            </a>
+            .
           </span>
         </div>
 
@@ -115,12 +167,16 @@ export default function RegisterScreen({
           onClick={handleRegister}
           style={{
             ...styles.submitButton,
-            backgroundColor: isValid ? "#0f766e" : "#aaa",
+            backgroundColor: isValid ? "#007AFF" : "#aaa",
             cursor: isValid ? "pointer" : "not-allowed",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 8,
           }}
-          disabled={!isValid}
+          disabled={!isValid || loading}
         >
-          Registrarse
+          {loading ? <FaSpinner className="spinner" style={{ animation: "spin 1s linear infinite" }} /> : "Registrarse"}
         </button>
 
         <p style={styles.helpLink}>¿Necesitas ayuda?</p>
@@ -167,13 +223,19 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "12px 3px",
     borderRadius: 8,
     border: "1px solid #ccc",
-    marginBottom: 14,
+    marginBottom: 10,
     fontSize: 14,
     outline: "none",
   },
+  error: {
+    color: "red",
+    fontSize: 12,
+    marginBottom: 8,
+    display: "block",
+  },
   passwordWrapper: {
     position: "relative",
-    marginBottom: 14,
+    marginBottom: 10,
   },
   eyeButton: {
     position: "absolute",
@@ -200,6 +262,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textDecoration: "underline",
   },
   submitButton: {
+    background: "#007AFF",
     marginTop: 10,
     width: "100%",
     padding: 12,
@@ -218,3 +281,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: "500",
   },
 };
+
+// Agrega este CSS global en tu app para animación de spinner (si no lo tienes ya)
+if (typeof document !== "undefined") {
+  const styleSheet = document.createElement("style");
+  styleSheet.innerHTML = `
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(styleSheet);
+}
+
