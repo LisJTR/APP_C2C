@@ -21,13 +21,10 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
 app.use((req, res, next) => {
   console.log(`➡️ Petición recibida: ${req.method} ${req.originalUrl}`);
   next();
 });
-
-
 
 // Middleware
 app.use(cors());

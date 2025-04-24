@@ -73,3 +73,27 @@ export const deleteUser = async (token) => {
     return error.response?.data || { message: "Error al eliminar usuario" };
   }
 };
+
+export async function loginWithGoogle(accessToken) {
+  try {
+    const response = await fetch("http://localhost:5000/api/auth/google", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ access_token: accessToken }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Error al iniciar sesión con Google");
+    }
+
+    return data; // { token, user, message }
+  } catch (err) {
+    console.error("❌ Error al hacer login con Google:", err);
+    throw err;
+  }
+};
+

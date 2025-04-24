@@ -1,34 +1,42 @@
-// components/web/HeroSection.tsx
-import React from "react";
+import React, { useRef } from "react";
 
 type HeroSectionProps = {
   onLoginPress: () => void;
 };
 
 export default function HeroSection({ onLoginPress }: HeroSectionProps) {
+  const handleScroll = () => {
+    const grid = document.getElementById("products-section");
+    if (grid) grid.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <>
-      <div style={styles.heroContainer}>
-        <img
-          src="https://i.imgur.com/TDcy7vp.jpeg"
-          alt="Fondo"
-          style={styles.heroImage}
-        />
-        <div style={styles.heroOverlay}>
-          <div style={styles.heroContent}>
-            <h1 style={styles.heroTitle}>Compra y vende con confianza</h1>
-
-             {/* 🔹 Este botón abre el modal */}
-            <button style={styles.heroButton} onClick={onLoginPress}>
-              Explorar artículos
-              </button>
-
-            <div style={styles.heroLink} onClick={onLoginPress}>¿Cómo funciona?</div>
+    <div style={styles.heroContainer}>
+      <img
+        src="https://i.imgur.com/TDcy7vp.jpeg"
+        alt="Fondo"
+        style={styles.heroImage}
+      />
+      <div style={styles.heroOverlay}>
+        <div style={styles.heroContent}>
+          <h1 style={styles.heroTitle}>Compra y vende con confianza</h1>
+  
+          <button style={styles.heroButton} onClick={onLoginPress}>
+            Explorar artículos
+          </button>
+  
+          <div style={styles.heroLink} onClick={handleScroll}>
+            ¿Cómo funciona?
           </div>
         </div>
       </div>
-    </>
-  );
+  
+      {/* 🔽 AÑADE ESTE BLOQUE AQUÍ DEBAJO */}
+      <div style={styles.sectionBelow}>
+        <h2 style={styles.sectionTitle}>Novedades</h2>
+      </div>
+    </div>
+  );  
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
@@ -38,7 +46,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     height: "85vh",
     overflow: "visible",
-    backgroundColor: "#f3f4f6",
   },
   heroImage: {
     position: "absolute",
@@ -88,9 +95,25 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: 35,
   },
   heroLink: {
-    fontSize: 20,
+    fontSize: 16,
     color: "#007AFF",
-    textDecoration: "none",
+    textDecoration: "underline",
     cursor: "pointer",
   },
+  sectionBelow: {
+    width: "100%",
+    textAlign: "center",
+    paddingTop: 75,
+    marginLeft: -550,
+    marginTop: -400,
+    backgroundColor: "#fff",
+  },
+  
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 600,
+    color: "#111",
+    fontFamily: "Inter, sans-serif",
+    marginBottom: 10,
+  },  
 };
