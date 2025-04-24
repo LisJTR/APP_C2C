@@ -15,17 +15,12 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-
- 
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 app.use((req, res, next) => {
   console.log(`➡️ Petición recibida: ${req.method} ${req.originalUrl}`);
   next();
 });
-
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -34,7 +29,6 @@ app.use("/api", productRoutes);
 
 // Servir archivos estáticos (imágenes subidas)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 
 // Rutas
 app.use("/api/auth", authRoutes);
@@ -46,4 +40,7 @@ app.listen(5000, "0.0.0.0", () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });
 
+app.listen(PORT, () => {
+  console.log("✅ Servidor corriendo en http://localhost:" + PORT);
+});
 
