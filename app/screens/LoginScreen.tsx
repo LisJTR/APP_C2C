@@ -62,7 +62,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
 
     if (result.token && result.user) {
       login(result.token, result.user);
-      router.replace("./(tabs)");
+      router.replace("/(tabs)/home");
     } else {
       alert(result.message || t("loginScreen.loginError"));
     }

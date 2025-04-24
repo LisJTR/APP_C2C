@@ -34,7 +34,8 @@ router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { username, email } = req.body;
+  const { username, email, location, bio, avatar_url } = req.body;
+
 
   try {
     const userExists = await pool.query("SELECT * FROM users WHERE id = $1", [req.user.id]);
@@ -43,9 +44,18 @@ router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
     }
 
     const updatedUser = await pool.query(
-      "UPDATE users SET username = COALESCE($1, username), email = COALESCE($2, email) WHERE id = $3 RETURNING id, username, email",
-      [username || null, email || null, req.user.id]
+      `UPDATE users 
+       SET 
+         username = COALESCE($1, username), 
+         email = COALESCE($2, email), 
+         location = COALESCE($3, location), 
+         bio = COALESCE($4, bio), 
+         avatar_url = COALESCE($5, avatar_url)
+       WHERE id = $6 
+       RETURNING id, username, email, location, bio, avatar_url`,
+      [username || null, email || null, location || null, bio || null, avatar_url || null, req.user.id]
     );
+    
 
     res.json({ message: "Perfil actualizado", user: updatedUser.rows[0] });
   } catch (error) {

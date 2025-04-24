@@ -6,6 +6,8 @@ import pool from "../config/db.js";
 import axios from "axios";
 import { sendVerificationEmail } from "../utils/emailService.js";
 import crypto from "crypto";
+import authMiddleware from "../middlewares/authMiddleware.js";
+
 
 const router = express.Router();
 const verificationCode = crypto.randomBytes(3).toString("hex").toUpperCase(); // Ej: "3F6A9B"
@@ -60,7 +62,8 @@ router.post("/login", async (req, res) => {
     console.log("🟡 Intento login:", identifier, password);
 
     const user = await pool.query(
-      "SELECT id, username, email, password FROM users WHERE email = $1 OR username = $1", [identifier]);
+      "SELECT id, username, email, password, avatar_url, location, bio, created_at, balance FROM users WHERE email = $1 OR username = $1",
+       [identifier]);
     if (user.rows.length === 0) {
       return res.status(400).json({ message: "Email, usuario o contraseña incorrectos" });
     }
@@ -85,7 +88,13 @@ router.post("/login", async (req, res) => {
         id: user.rows[0].id,
         username: user.rows[0].username,
         email: user.rows[0].email,
-      },
+        avatar_url: user.rows[0].avatar_url,
+        location: user.rows[0].location,
+        bio: user.rows[0].bio,
+        created_at: user.rows[0].created_at,
+        balance: user.rows[0].balance,
+      }
+      
     });
     console.log("🧪 Resultado de búsqueda:", user.rows);
 
@@ -122,7 +131,8 @@ router.post("/google", async (req, res) => {
     const username = googleUser.name || email.split("@")[0];
 
     // Verificar si ya existe en tu base de datos
-    const userResult = await pool.query("SELECT id, username, email FROM users WHERE email = $1", [email]);
+    const userResult = await pool.query(
+      "SELECT id, username, email FROM users WHERE email = $1", [email]);
 
     let user;
 
@@ -213,6 +223,31 @@ router.post("/resend-code", async (req, res) => {
     res.status(500).json({ message: "Error al reenviar el código" });
   }
 });
+
+
+
+// 📤 Subida de avatar (sin authMiddleware por simplicidad, o lo puedes añadir)
+router.put("/user/avatar/:id", authMiddleware, upload.single("avatar"), async (req, res) => {
+  const userId = req.params.id;
+
+  console.log("🟢 Imagen recibida:", req.file); // <-- AQUÍ
+
+  if (parseInt(req.params.id) !== req.user.id) {
+    return res.status(403).json({ message: "No autorizado para modificar este avatar" });
+  }
+
+  const imageUrl = `http://${req.hostname}:5000/uploads/avatars/${req.file.filename}`;
+
+  try {
+    await pool.query("UPDATE users SET avatar_url = $1 WHERE id = $2", [imageUrl, userId]);
+    res.json({ message: "Avatar actualizado", avatar_url: imageUrl });
+  } catch (error) {
+    console.error("Error al actualizar avatar:", error);
+    res.status(500).json({ message: "Error al actualizar el avatar" });
+  }
+});
+
+
 
 
 export default router;

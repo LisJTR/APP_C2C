@@ -165,7 +165,7 @@ const loginWithGoogleToken = async (token: string) => {
 
       <TouchableOpacity onPress={() => {
         setShowLoginOptions(false);
-        router.push("./screens/LoginScreen");
+        router.push("/screens/LoginScreen");
       }}>
         <Text style={styles.emailLink}>{t("welcomeScreenMobile.continueEmail")}</Text>
       </TouchableOpacity>

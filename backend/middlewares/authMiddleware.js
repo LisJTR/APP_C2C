@@ -1,18 +1,20 @@
 import jwt from "jsonwebtoken";
 
 const authMiddleware = (req, res, next) => {
-  const token = req.header("Authorization");
+  const authHeader = req.headers.authorization;
 
-  if (!token) {
-    return res.status(401).json({ message: "Acceso denegado. No hay token" });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Acceso denegado. Token ausente o mal formado" });
   }
 
+  const token = authHeader.split(" ")[1];
+
   try {
-    const verified = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
-    req.user = verified;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // ← Aquí es donde guardamos el usuario en req.user
     next();
   } catch (error) {
-    res.status(400).json({ message: "Token inválido" });
+    res.status(401).json({ message: "Token inválido" });
   }
 };
 

@@ -1,11 +1,15 @@
 export interface User {
-    id?: string;
+  id?: number;
   username?: string;
   email?: string;
-  }
-  
-  export interface AuthResponse {
-    token: string;
-    user: User;
-  }
-  
+  avatar_url?: string;
+  location?: string;
+  bio?: string;
+  created_at?: string;
+  balance?: number;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}

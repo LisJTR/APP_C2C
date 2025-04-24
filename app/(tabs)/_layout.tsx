@@ -4,9 +4,19 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import "../i18n";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/useAuthStore"; // ajústalo si la ruta cambia
+
 
 
 export default function TabLayout() {
+
+  const loadUser = useAuthStore((state) => state.loadUser); // 
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
   const colorScheme = useColorScheme();
 
   return (

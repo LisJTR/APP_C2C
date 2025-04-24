@@ -1,13 +1,11 @@
 import axios from "axios";
 
-const API_URL = "http://192.168.1.35:5000/api"; // Cambia esto si usas un móvil físico
+const API_URL = "http://192.168.1.x:5000/api"; // Cambia esto si usas un móvil físico
 
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000, // tiempo de espera de 10 segundos
-  headers: {
-    "Content-Type": "application/json",
-  },
+ 
 });
 
 export const registerUser = async (username, email, password) => {

@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { User } from "../types/types"; // Asegúrate de que `types.ts` tiene la interfaz `User`
+import { User } from "../types/types";
+
 
 // 📌 Estado de autenticación
 interface AuthState {
@@ -10,16 +11,17 @@ interface AuthState {
   login: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
+  updateUser: (newUser: User) => Promise<void>; // 🔥 nuevo
 }
 
 // 📌 Zustand con persistencia
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
       user: null,
 
-      // 📌 Iniciar sesión y guardar usuario en AsyncStorage
+      // 📌 Iniciar sesión
       login: async (token, user) => {
         try {
           await AsyncStorage.setItem("token", token);
@@ -30,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // 📌 Cerrar sesión y eliminar datos almacenados
+      // 📌 Cerrar sesión
       logout: async () => {
         try {
           await AsyncStorage.removeItem("token");
@@ -41,7 +43,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // 📌 Cargar sesión al iniciar la app
+      // 📌 Cargar sesión
       loadUser: async () => {
         try {
           const token = await AsyncStorage.getItem("token");
@@ -57,9 +59,22 @@ export const useAuthStore = create<AuthState>()(
           console.error("Error cargando usuario:", error);
         }
       },
+
+      // 📌 Actualizar usuario
+      updateUser: async (newUser) => {
+        try {
+          const token = get().token;
+          if (token) {
+            await AsyncStorage.setItem("user", JSON.stringify(newUser));
+            set({ user: newUser });
+          }
+        } catch (error) {
+          console.error("Error actualizando usuario:", error);
+        }
+      },
     }),
     {
-      name: "auth-storage", // Nombre del almacenamiento en AsyncStorage
+      name: "auth-storage",
       storage: {
         getItem: async (key) => {
           const value = await AsyncStorage.getItem(key);
