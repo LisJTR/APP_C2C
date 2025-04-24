@@ -36,7 +36,7 @@ export default function WelcomeScreen() {
             <View style={styles.heroContainer}>
               <HeroSection onLoginPress={() => setShowModal(true)} />
             </View>
-            <ProductGrid onProductClick={() => setShowModal(true)} searchQuery={searchQuery} />
+            <ProductGrid onProductClick={() => setShowModal(true)}/>
             <Footer />
           </ScrollView>
         </>
