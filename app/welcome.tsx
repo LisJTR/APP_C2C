@@ -1,19 +1,20 @@
 // app/welcome.tsx
-import { View, Text, StyleSheet, Pressable, Platform } from "react-native";
+import { View, Text, StyleSheet, Pressable, Platform, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
 import { usePathname } from "expo-router";
 import AuthModal from "../components/web/ScreensModal/AuthModalWeb";
 import Header from "../components/web/Header";
 import HeroSection from "../components/web/HeroSection";
+import ProductGrid from "../components/web/products/ProductGrid";
+import Footer from "../components/web/Footer";
 import { useTranslation } from "react-i18next";
-
-
 
 export default function WelcomeScreen() {
   const [showModal, setShowModal] = useState(false);
   const pathname = usePathname();
   const { t } = useTranslation();
-  
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     if (pathname !== "/welcome") {
       setShowModal(false);
@@ -25,27 +26,33 @@ export default function WelcomeScreen() {
       {Platform.OS === "web" ? (
         <>
           <View style={{ position: "relative", zIndex: 10 }}>
-            <Header onLoginPress={() => setShowModal(true)} />
+          <Header onLoginPress={() => setShowModal(true)} onSearch={(q) => setSearchQuery(q)} />
           </View>
 
-          {/* 👇 HeroSection aquí debajo del Header */}
-          <View style={styles.heroContainer}>
-            <HeroSection onLoginPress={() => setShowModal(true)} />
-          </View>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            style={{ backgroundColor: "#fff" }}
+          >
+            <View style={styles.heroContainer}>
+              <HeroSection onLoginPress={() => setShowModal(true)} />
+            </View>
+            <ProductGrid onProductClick={() => setShowModal(true)} searchQuery={searchQuery} />
+            <Footer />
+          </ScrollView>
         </>
       ) : (
         <>
           <View style={styles.topRight}>
             <Pressable onPress={() => setShowModal(true)}>
-              <Text style={styles.loginText}> {t("welcomeScreen.register")} | {t("welcomeScreen.login")}</Text>
+              <Text style={styles.loginText}>
+                {t("welcomeScreen.register")} | {t("welcomeScreen.login")}
+              </Text>
             </Pressable>
           </View>
 
           <View style={styles.content}>
             <Text style={styles.title}>{t("welcomeScreen.welcome")}</Text>
-            <Text style={styles.subtitle}>
-            {t("welcomeScreen.textWelcome")}
-            </Text>
+            <Text style={styles.subtitle}>{t("welcomeScreen.textWelcome")}</Text>
           </View>
         </>
       )}
@@ -60,7 +67,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     position: "relative",
-    overflow: "visible",
+  },
+  scrollContent: {
+    paddingBottom: 60,
+    backgroundColor: "#fff",
   },
   topRight: {
     alignItems: "flex-end",
@@ -87,6 +97,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   heroContainer: {
-    marginTop: 20,
+    marginTop: 0,
+    padding: 0,
+    backgroundColor: "#fff",
   },
 });

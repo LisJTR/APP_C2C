@@ -92,7 +92,7 @@ export default function AuthModalWeb({
           id: "facebook123",
         });
         handleClose();
-        router.replace("/(tabs)");
+        router.replace("./(tabs)");
       }
     };
     handleFacebookLogin();

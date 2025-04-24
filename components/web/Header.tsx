@@ -1,4 +1,3 @@
-// components/web/Header.tsx
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -6,12 +5,12 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Pressable,
   Platform,
 } from "react-native";
 import { ChevronDown, Search, HelpCircle } from "lucide-react";
 import LanguageSelector from "./LanguageSelector";
-import "./LanguageSelector.css"; // reutilizamos el mismo estilo
+import "./LanguageSelector.css";
+import { useRouter } from "expo-router";
 
 const MENU_OPTIONS = [
   { id: "articles", label: "Artículos" },
@@ -21,19 +20,47 @@ const MENU_OPTIONS = [
 
 type HeaderProps = {
   onLoginPress: () => void;
+  onSearch: (query: string) => void;
 };
 
-export default function Header({ onLoginPress }: HeaderProps) {
+export default function Header({ onLoginPress, onSearch }: HeaderProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("articles");
   const ref = useRef<HTMLDivElement>(null);
   const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+
+  const fetchSuggestions = async (text: string) => {
+    if (!text.trim()) return setSearchSuggestions([]);
+    try {
+      const res = await fetch(`http://localhost:5000/api/products/suggestions?query=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      setSearchSuggestions(data);
+    } catch (err) {
+      console.error("Error obteniendo sugerencias", err);
+    }
+  };
+
+  const handleSuggestionClick = (value: string) => {
+    setSearchTerm(value);
+    setSearchSuggestions([]);
+    onSearch(value);
+    router.push({
+      pathname: "/search/[query]",
+      params: { query: value },
+    });
+  };
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSearch(searchTerm);
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -55,25 +82,16 @@ export default function Header({ onLoginPress }: HeaderProps) {
   return (
     <>
       <View style={styles.topBar}>
-        {/* Logo */}
         <a href="/welcome" style={styles.logoLink}>
-        <img
-          src="https://i.imgur.com/6k1EXFk.png"
-           alt="KCL Trading Logo"
-          style={styles.logoImage}
-           />
+          <img src="https://i.imgur.com/6k1EXFk.png" alt="KCL Trading Logo" style={styles.logoImage} />
         </a>
 
-        {/* Categoría + Buscador */}
         <View style={styles.searchSection}>
           {Platform.OS === "web" ? (
             <div className="lang-selector" ref={ref}>
               <button className="lang-button" onClick={toggleMenu}>
-                {
-                  MENU_OPTIONS.find((opt) => opt.id === selected)?.label ||
-                  "Seleccionar"
-                }{" "}
-                <ChevronDown size={16} strokeWidth={2} className="arrow" />
+                {MENU_OPTIONS.find((opt) => opt.id === selected)?.label || "Seleccionar"}{" "}
+                <ChevronDown size={16} strokeWidth={3} className="arrow" />
               </button>
 
               {open && (
@@ -82,16 +100,14 @@ export default function Header({ onLoginPress }: HeaderProps) {
                   style={{
                     position: "absolute",
                     top: `${dropdownCoords.top}px`,
-                    left: `${dropdownCoords.left -530}px`,
+                    left: `${dropdownCoords.left - 530}px`,
                     zIndex: 9999,
                   }}
                 >
                   {MENU_OPTIONS.map((option) => (
                     <div
                       key={option.id}
-                      className={`lang-option ${
-                        selected === option.id ? "active" : ""
-                      }`}
+                      className={`lang-option ${selected === option.id ? "active" : ""}`}
                       onClick={() => handleSelect(option.id)}
                     >
                       {option.label}
@@ -107,22 +123,39 @@ export default function Header({ onLoginPress }: HeaderProps) {
             </View>
           )}
 
-          <View style={styles.searchContainer}>
+          <form onSubmit={handleSearch} style={styles.searchContainer}>
             <Search size={18} color="#888" style={{ marginLeft: 8 }} />
             <TextInput
-              placeholder={`Busca ${
-                MENU_OPTIONS.find((opt) => opt.id === selected)?.label.toLowerCase()
-              }`}
+              placeholder={`Busca ${MENU_OPTIONS.find((opt) => opt.id === selected)?.label.toLowerCase()}`}
               style={styles.searchInput}
               placeholderTextColor="#888"
+              value={searchTerm}
+              onChangeText={(text) => {
+                setSearchTerm(text);
+                fetchSuggestions(text);
+              }}
             />
-          </View>
+          </form>
+
+          {searchSuggestions.length > 0 && (
+            <div style={styles.suggestions}>
+              {searchSuggestions.map((s, i) => (
+                <div
+                  key={i}
+                  style={styles.suggestionItem}
+                  onClick={() => handleSuggestionClick(s)}
+                  className="hover-suggestion"
+                >
+                  {s}
+                </div>
+              ))}
+            </div>
+          )}
         </View>
 
-        {/* Botones de acción */}
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.linkButton} onPress={onLoginPress}>
-            <Text style={styles.linkText}>Regístrate | Inicia sesiónnnnn</Text>
+            <Text style={styles.linkText}>Regístrate | Inicia sesión</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sellButton}>
             <Text style={styles.sellText}>Vender ahora</Text>
@@ -134,7 +167,6 @@ export default function Header({ onLoginPress }: HeaderProps) {
         </View>
       </View>
 
-      {/* 🔹 Barra inferior de navegación */}
       <View style={styles.navBar}>
         {[
           "Mujer",
@@ -198,7 +230,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f1f5f9",
     borderRadius: 6,
-    // paddingRight: 0,
   },
   searchInput: {
     flex: 1,
@@ -261,20 +292,41 @@ const styles = StyleSheet.create({
     cursor: "pointer",
   },
   logoImage: {
-    width: 200, // más ancho
-    height: 60, // más alto
-    marginLeft: 150, // empuja el logo a la derecha
-    marginRight: 0,
-    objectFit: "contain", // asegura que se vea bien
-  },   
+    width: 200,
+    height: 60,
+    marginLeft: 150,
+    objectFit: "contain",
+  },
+  suggestions: {
+    position: "absolute",
+    top: 40,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    zIndex: 9999,
+    borderRadius: 6,
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+    maxHeight: 300,
+    overflow: "hidden",
+  },
+  suggestionItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: "#111",
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+    cursor: "pointer",
+    fontFamily: "Inter, sans-serif",
+  },
 });
 
-// Este bloque lo insertamos dinámicamente para el efecto hover
+// Hover para sugerencias
 if (typeof document !== "undefined") {
   const styleSheet = document.createElement("style");
   styleSheet.innerHTML = `
-    a:hover img {
-      transform: scale(1.05);
+    .hover-suggestion:hover {
+      background-color: #f3f4f6;
     }
   `;
   document.head.appendChild(styleSheet);

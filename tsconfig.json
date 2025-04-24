@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "allowJs": true,  // ✅ Permite archivos JavaScript junto con TypeScript
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"

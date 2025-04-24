@@ -10,13 +10,8 @@ import authRoutes from "./controllers/authRoutes.js";
 import userRoutes from "./controllers/userRoutes.js";
 import productRoutes from "./controllers/productRoutes.js";
 
-
-
- 
-
 const app = express();
 const PORT = process.env.PORT || 5000;
-
 
 // Middleware
 app.use(cors());
