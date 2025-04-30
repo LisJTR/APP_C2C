@@ -1,44 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TextInput, FlatList } from "react-native";
+import { View, Text, StyleSheet, TextInput, FlatList, Image } from "react-native";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
-import { Image } from "react-native";
-
-
-type Product = {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  size: string;
-  imageUrl: string; 
-};
+import { API_BASE_URL } from "@/utils/config";
+import { ALL_CATEGORIES } from "@/constants/categories";
+import { Product } from "@/types/Product";
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("mujer");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
 
-
-  const categories = [
-    { key: "mujer", label: t("home.category.woman") },
-    { key: "hombre", label: t("home.category.man") },
-    { key: "ninos", label: t("home.category.kids") },
-    { key: "hogar", label: t("home.category.home") },
-  ];
+  const categories = ALL_CATEGORIES.filter((cat) =>
+    ["ropa", "calzado", "accesorios", "hogar"].includes(cat.key)
+  );
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // IMPORTANTE: cambiar esta URL por la del servidor en producción (por ejemplo, https://api.midominio.com)
-        const res = await axios.get("http://192.168.1.35:5000/api/products", {
-          params: {
-            category: selectedCategory,
-            query: query,
-          },
-        });
-        setProducts(res.data); // <-- Asegúrate que el backend responde con un array
+        const params: Record<string, any> = { query };
+
+        if (selectedCategory) {
+          params.category = selectedCategory;
+        }
+
+        const res = await axios.get(`${API_BASE_URL}/products`, { params });
+        setProducts(res.data);
       } catch (error) {
         console.error("Error al cargar productos", error);
       }
@@ -57,6 +45,17 @@ export default function HomeScreen() {
       />
 
       <View style={styles.categoriesContainer}>
+        <Text
+          key="all"
+          onPress={() => setSelectedCategory(null)}
+          style={[
+            styles.categoryText,
+            selectedCategory === null && styles.categoryTextSelected,
+          ]}
+        >
+          {t("Todo")}
+        </Text>
+
         {categories.map((cat) => (
           <Text
             key={cat.key}
@@ -71,27 +70,24 @@ export default function HomeScreen() {
         ))}
       </View>
 
-    {/*TÍTULO DE LA SECCIÓN DE PRODUCTOS */}
-    <Text style={styles.sectionTitle}>{t("home.newProducts")}</Text>
+      <Text style={styles.sectionTitle}>{t("home.newProducts")}</Text>
 
       <FlatList
-      data={products}
-      keyExtractor={(item) => item.id.toString()}
-      numColumns={2}
-      columnWrapperStyle={{ justifyContent: "space-between" }}
-      renderItem={({ item }) => (
-        <View style={styles.productCard}>
-          <Text style={styles.productTitle}>{item.title}</Text>
-          <Image 
-            source={{ uri: item.imageUrl }} 
-            style={styles.productImage} 
-          /> 
-          <Text>{item.price}€</Text>
-          <Text>{item.size}</Text>
-        </View>
-  )}
-/>
-
+        data={products}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
+        columnWrapperStyle={{ justifyContent: "space-between" }}
+        renderItem={({ item }) => (
+          <View style={styles.productCard}>
+            <Text style={styles.productTitle}>{item.title}</Text>
+            {item.image_url && (
+              <Image source={{ uri: item.image_url }} style={styles.productImage} />
+            )}
+            <Text>{item.price}€</Text>
+            <Text>{item.size}</Text>
+          </View>
+        )}
+      />
     </View>
   );
 }
@@ -117,11 +113,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
     paddingBottom: 5,
+    flexWrap: "wrap",
   },
   categoryText: {
     fontSize: 16,
     color: "#888",
     paddingVertical: 5,
+    paddingHorizontal: 10,
   },
   categoryTextSelected: {
     color: "#2F70AF",
@@ -136,7 +134,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginBottom: 15,
-    width: "48%", 
+    width: "48%",
   },
   productTitle: {
     fontWeight: "bold",

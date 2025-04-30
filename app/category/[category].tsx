@@ -5,15 +5,9 @@ import { useLocalSearchParams, useNavigation } from "expo-router";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import { Image } from "react-native";
+import { API_BASE_URL } from "@/utils/config"; // Usa esto
+import { Product } from "@/types/Product";
 
-type Product = {
-  id: number;
-  title: string;
-  price: number;
-  size: string;
-  condition: string;
-  imageUrl?: string;
-};
 
 const sizeOptions = ["XS", "S", "M", "L", "XL"];
 const conditionOptions = ["Nuevo", "Muy bueno", "Bueno", "Aceptable"];
@@ -34,10 +28,14 @@ export default function CategoryScreen() {
 
   useLayoutEffect(() => {
     if (category) {
-      const translated = t(`explore.categories.${category}`);
-      const finalTitle = translated.startsWith("explore.categories.")
-        ? "Categoría"
-        : translated;
+      const key = `explore.categories.${category}`;
+      const translated = t(key);
+      
+      const finalTitle =
+        typeof translated === "string" && !translated.startsWith("explore.categories.")
+          ? translated
+          : "Categoría";
+  
       navigation.setOptions({
         title: finalTitle,
         headerShown: true,
@@ -45,11 +43,12 @@ export default function CategoryScreen() {
       });
     }
   }, [category, t]);
+  
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://192.168.1.35:5000/api/products", {
+        const res = await axios.get(`${API_BASE_URL}/products`, {
           params: { category },
         });
         setProducts(res.data);
@@ -57,9 +56,10 @@ export default function CategoryScreen() {
         console.error("Error al cargar productos por categoría", error);
       }
     };
-
+  
     if (category) fetchProducts();
   }, [category]);
+  
 
   const filteredProducts = products
     .filter((product) =>
@@ -152,8 +152,8 @@ export default function CategoryScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            {item.imageUrl && (
-              <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
+            {item.image_url && (
+              <Image source={{ uri: item.image_url }} style={styles.productImage} />
             )}
             <Text style={styles.name}>{item.title}</Text>
             <Text>{item.price} €</Text>

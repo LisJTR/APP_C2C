@@ -15,7 +15,6 @@ export default function RootLayout() {
         <Stack.Screen name="auth/index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="screens/WelcomeScreenMobile" options={{ headerShown: false }} />
-
       </Stack>
     </GestureHandlerRootView>
   );

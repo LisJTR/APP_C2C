@@ -65,7 +65,7 @@ const loginWithGoogleToken = async (token: string) => {
 
     const { token: jwt, user } = res.data;
     useAuthStore.getState().login(jwt, user);
-    router.replace("./(tabs)");
+    router.replace("/home");
   } catch (error) {
     console.error( t("welcomeScreenMobile.errorLoginGoogle"), error);
     alert(t("welcomeScreenMobile.errorlogin"));
@@ -121,7 +121,7 @@ const loginWithGoogleToken = async (token: string) => {
 
       <TouchableOpacity onPress={() => {
         setShowRegisterOptions(false);
-        router.push("./screens/RegisterScreen");
+        router.push("/screens/RegisterScreen");
       }}>
         <Text style={styles.emailLink}>{t("welcomeScreenMobile.continueEmail")}</Text>
       </TouchableOpacity>

@@ -1,36 +1,18 @@
-import React, { useState,  useLayoutEffect } from "react";
+import React, { useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
-
-
-const rawCategories = [
-  { id: "1", key: "clothes", screen: " clothes" },
-  { id: "2", key :"shoes", screen: "shoes" },
-  { id: "3", key: "accessories", screen: "accessories" },
-  { id: "4", key: "electronics", screen: "electronics" },
-  { id: "5", key: "home", screen: "home" },
-  { id: "6", key: "petss", screen: "petss" },
-  { id: "7", key: "woman", screen: "woman" },
-  { id: "8", key: "man", screen: "man" },
-  { id: "9", key: "children", screen: "children" },
-];
-
+import { ALL_CATEGORIES } from "@/constants/categories";
 
 export default function ExploreScreen() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
+  const categories = ALL_CATEGORIES.filter((item) =>
+    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-
-
-  const categories = rawCategories
-    .map((item) => ({
-      ...item,
-      name: t(`explore.categories.${item.key}`),
-    }))
-    .filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <View style={styles.container}>
@@ -45,24 +27,21 @@ export default function ExploreScreen() {
 
       <FlatList
         data={categories}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.key}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.categoryButton}
             onPress={() =>
-              router.push({
-                pathname: "/category/[category]",
-                params: { category: item.screen },
-              })
+              router.push({ pathname: "/category/[category]", params: { category: item.key } })
             }
 
           >
-            <Text style={styles.categoryText}>{item.name}</Text>
+            <Text style={styles.categoryText}>{item.label}</Text>
           </TouchableOpacity>
         )}
-      
+
       />
-      
+
     </View>
   );
   

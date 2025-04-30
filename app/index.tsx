@@ -20,7 +20,7 @@ export default function IndexRedirect() {
         if (Platform.OS === "web") {
           router.replace("./welcome");
         } else {
-          router.replace("./screens/WelcomeScreenMobile");
+          router.replace("/screens/WelcomeScreenMobile");
         }
       } else {
         router.replace("./(tabs)");
