@@ -1,14 +1,49 @@
-// app/search/[query].tsx
 import { useLocalSearchParams } from "expo-router";
-import { Text, View } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
+import Header from "@/components/web/Header";
+import Footer from "@/components/web/Footer";
+import ProductGrid from "@/components/web/products/ProductGrid";
+import AuthModal from "@/components/web/ScreensModal/AuthModalWeb";
+import { useState } from "react";
 
 export default function SearchPage() {
   const { query } = useLocalSearchParams();
+  const [showModal, setShowModal] = useState(false);
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 20, fontWeight: "bold" }}>Resultados para: {query}</Text>
-      {/* Aquí puedes reutilizar ProductGrid con searchQuery={query} */}
+    <View style={styles.container}>
+      {Platform.OS === "web" ? (
+        <>
+          <View style={{ position: "relative", zIndex: 10 }}>
+            <Header onLoginPress={() => setShowModal(true)} onSearch={() => {}} />
+          </View>
+
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            <Text style={styles.title}>Resultados para: {query}</Text>
+            <ProductGrid searchQuery={query as string} onProductClick={() => setShowModal(true)} />
+            <Footer />
+            <AuthModal visible={showModal} onClose={() => setShowModal(false)} />
+          </ScrollView>
+        </>
+      ) : (
+        <Text style={styles.title}>Resultados para: {query}</Text>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  scrollContent: {
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+});

@@ -89,7 +89,7 @@ export default function AuthModalWeb({
         login(facebookResponse.authentication.accessToken, {
           username: "FacebookUser",
           email: "facebookuser@demo.com",
-          id: "facebook123",
+          //id: "facebook123",
         });
         handleClose();
         router.replace("./(tabs)");

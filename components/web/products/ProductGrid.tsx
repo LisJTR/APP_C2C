@@ -12,7 +12,13 @@ type Product = {
   image_url: string;
 };
 
-export default function ProductGrid({ onProductClick }: { onProductClick: () => void }) {
+type ProductGridProps = {
+  onProductClick: () => void;
+  searchQuery?: string;
+};
+
+export default function ProductGrid({ onProductClick, searchQuery }: ProductGridProps) {
+
   const [products, setProducts] = useState<Product[]>([]);
   const [visibleCount, setVisibleCount] = useState(2);
 
@@ -30,10 +36,16 @@ export default function ProductGrid({ onProductClick }: { onProductClick: () => 
     setVisibleCount((prev) => prev + 10);
   };
 
+  const filteredProducts = searchQuery
+  ? products.filter((p) =>
+      p.title.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  : products;
+
   return (
     <div style={styles.gridContainer}>
       <div style={styles.grid}>
-        {products.slice(0, visibleCount).map((p) => (
+      {filteredProducts.slice(0, visibleCount).map((p) => (
           <ProductCard key={p.id} product={p} onClick={onProductClick} />
         ))}
       </div>
