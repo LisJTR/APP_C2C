@@ -19,7 +19,7 @@ export default function EmailVerification({ email }: { email: string }) {
       const data = await res.json();
   
       if (res.ok) {
-        router.replace("./(tabs)"); // Redirige al layout principal
+        router.replace("/(tabs)/home"); // Redirige al layout principal
       } else {
         alert(data.message || "Código incorrecto");
       }

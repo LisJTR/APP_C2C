@@ -106,9 +106,6 @@ router.post("/login", async (req, res) => {
 
 });
 
-
-
-
 // Login con Google
 router.post("/google", async (req, res) => {
   const { access_token } = req.body;
@@ -223,31 +220,5 @@ router.post("/resend-code", async (req, res) => {
     res.status(500).json({ message: "Error al reenviar el código" });
   }
 });
-
-
-
-// 📤 Subida de avatar (sin authMiddleware por simplicidad, o lo puedes añadir)
-router.put("/user/avatar/:id", authMiddleware, upload.single("avatar"), async (req, res) => {
-  const userId = req.params.id;
-
-  console.log("🟢 Imagen recibida:", req.file); // <-- AQUÍ
-
-  if (parseInt(req.params.id) !== req.user.id) {
-    return res.status(403).json({ message: "No autorizado para modificar este avatar" });
-  }
-
-  const imageUrl = `http://${req.hostname}:5000/uploads/avatars/${req.file.filename}`;
-
-  try {
-    await pool.query("UPDATE users SET avatar_url = $1 WHERE id = $2", [imageUrl, userId]);
-    res.json({ message: "Avatar actualizado", avatar_url: imageUrl });
-  } catch (error) {
-    console.error("Error al actualizar avatar:", error);
-    res.status(500).json({ message: "Error al actualizar el avatar" });
-  }
-});
-
-
-
 
 export default router;
