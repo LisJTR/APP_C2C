@@ -106,9 +106,6 @@ router.post("/login", async (req, res) => {
 
 });
 
-
-
-
 // Login con Google
 router.post("/google", async (req, res) => {
   const { access_token } = req.body;

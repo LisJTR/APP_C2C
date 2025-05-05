@@ -82,8 +82,8 @@ export default function RegisterScreen({
     try {
       const result = await registerUser(username, email, password);
       if (result.user) {
+        router.replace(`/email-verification/${encodeURIComponent(email)}`);
         onClose();
-        setTimeout(() => onSuccess(email), 100);
       } else {
         alert(result.message || "Error al registrar el usuario");
       }

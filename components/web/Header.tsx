@@ -126,6 +126,7 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
           <form onSubmit={handleSearch} style={styles.searchContainer}>
             <Search size={18} color="#888" style={{ marginLeft: 8 }} />
             <TextInput
+              className="search-input"
               placeholder={`Busca ${MENU_OPTIONS.find((opt) => opt.id === selected)?.label.toLowerCase()}`}
               style={styles.searchInput}
               placeholderTextColor="#888"
@@ -138,18 +139,17 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
           </form>
 
           {searchSuggestions.length > 0 && (
-            <div style={styles.suggestions}>
-              {searchSuggestions.map((s, i) => (
-                <div
-                  key={i}
-                  style={styles.suggestionItem}
-                  onClick={() => handleSuggestionClick(s)}
-                  className="hover-suggestion"
-                >
-                  {s}
-                </div>
-              ))}
-            </div>
+            <div className="suggestions-box">
+            {searchSuggestions.map((s, i) => (
+              <div
+                key={i}
+                className="suggestion-item"
+                onClick={() => handleSuggestionClick(s)}
+              >
+                {s}
+              </div>
+            ))}
+          </div>          
           )}
         </View>
 
@@ -305,28 +305,62 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     zIndex: 9999,
     borderRadius: 6,
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-    maxHeight: 300,
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
     overflow: "hidden",
+    maxHeight: 300,
   },
+  
   suggestionItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    fontSize: 17,
+    width: "100%",
     color: "#111",
     borderBottomWidth: 1,
     borderColor: "#eee",
     cursor: "pointer",
     fontFamily: "Inter, sans-serif",
   },
+  
 });
 
 // Hover para sugerencias
 if (typeof document !== "undefined") {
   const styleSheet = document.createElement("style");
-  styleSheet.innerHTML = `
-    .hover-suggestion:hover {
+  styleSheet.innerHTML += `
+    .suggestions-box {
+      position: absolute;
+      top: 40px;
+      left: 0;
+      right: 0;
+      background-color: #fff;
+      z-index: 9999;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      max-height: 300px;
+    }
+
+    .suggestion-item {
+      padding: 16px 24px;
+      font-size: 17px;
+      color: #111;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      font-family: Inter, sans-serif;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
       background-color: #f3f4f6;
+    }
+
+     input:focus {
+      outline: none !important;
+      box-shadow: none !important;
     }
   `;
   document.head.appendChild(styleSheet);
