@@ -10,7 +10,7 @@ import {
 import { ChevronDown, Search, HelpCircle } from "lucide-react";
 import LanguageSelector from "./LanguageSelector";
 import "./LanguageSelector.css";
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 
 const MENU_OPTIONS = [
   { id: "articles", label: "Artículos" },
@@ -24,6 +24,7 @@ type HeaderProps = {
 };
 
 export default function Header({ onLoginPress, onSearch }: HeaderProps) {
+  const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("articles");
@@ -32,30 +33,49 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (pathname.startsWith("/members")) {
+      setSelected("members");
+    } else if (pathname.startsWith("/search")) {
+      setSelected("articles");
+    }
+  }, [pathname]);
+
   const fetchSuggestions = async (text: string) => {
     if (!text.trim()) return setSearchSuggestions([]);
+  
+    const endpoint =
+      selected === "members"
+        ? `http://localhost:5000/api/users/suggestions?query=${encodeURIComponent(text)}`
+        : `http://localhost:5000/api/products/suggestions?query=${encodeURIComponent(text)}`;
+  
     try {
-      const res = await fetch(`http://localhost:5000/api/products/suggestions?query=${encodeURIComponent(text)}`);
+      const res = await fetch(endpoint);
       const data = await res.json();
       setSearchSuggestions(data);
     } catch (err) {
       console.error("Error obteniendo sugerencias", err);
     }
   };
+  
 
   const handleSuggestionClick = (value: string) => {
     setSearchTerm(value);
     setSearchSuggestions([]);
     onSearch(value);
     router.push({
-      pathname: "/search/[query]",
+      pathname: selected === "members" ? "/members/[query]" : "/search/[query]",
       params: { query: value },
-    });
+    });    
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSearch(searchTerm);
+    router.push({
+      pathname: selected === "members" ? "/members/[query]" : "/search/[query]",
+      params: { query: searchTerm },
+    });    
   };
 
   useEffect(() => {

@@ -81,4 +81,40 @@ router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
     }
   });
 
+  // Ruta para obtener usuarios verificados por nombre o parte del nombre
+router.get("/search", async (req, res) => {
+  const { query } = req.query;
+
+  try {
+    const result = await pool.query(
+      `SELECT id, username, email FROM users 
+       WHERE is_verified = true AND username ILIKE $1`,
+      [`%${query}%`]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error al buscar usuarios:", err);
+    res.status(500).json({ error: "Error del servidor" });
+  }
+});
+
+// controllers/userRoutes.js
+router.get("/suggestions", async (req, res) => {
+  const query = req.query.query?.toLowerCase();
+  if (!query) return res.json([]);
+
+  try {
+    const result = await pool.query(
+      `SELECT username FROM users WHERE LOWER(username) LIKE $1 AND is_verified = true LIMIT 5`,
+      [`%${query}%`]
+    );
+
+    res.json(result.rows.map(r => r.username));
+  } catch (err) {
+    console.error("Error al obtener sugerencias:", err);
+    res.status(500).json({ error: "Error del servidor" });
+  }
+});
+
   export default router;
