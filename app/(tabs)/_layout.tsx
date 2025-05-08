@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Platform } from "react-native";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import "../i18n";
@@ -35,7 +35,7 @@ export default function TabLayout() {
     options={{
       title: "Home",
       headerShown: false,
-      tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+      tabBarIcon: ({ color }) => <Ionicons name="home" size={28} color={color} />,
     }}
   />
 
@@ -45,7 +45,7 @@ export default function TabLayout() {
     options={{
       title: "Mensajes",
       headerShown: false,
-      tabBarIcon: ({ color }) => <IconSymbol size={28} name="bubble.left.and.bubble.right.fill" color={color} />,
+      tabBarIcon: ({ color }) => <Ionicons size={28} name="chatbubbles" color={color} />,
     }}
   />
 
@@ -55,7 +55,7 @@ export default function TabLayout() {
     options={{
       title: "Vende",
       headerShown: false,
-      tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus.app.fill" color={color} />,
+      tabBarIcon: ({ color }) => <Ionicons size={28} name="add-circle" color={color} />,
     }}
   />
 
@@ -65,7 +65,7 @@ export default function TabLayout() {
     options={{
       title: "Buscar",
       headerShown: false, // Oculta el título en la parte superior
-      tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
+      tabBarIcon: ({ color }) => <Ionicons size={28} name="search" color={color} />,
     }}
   />
 
@@ -75,7 +75,7 @@ export default function TabLayout() {
     options={{
       title: "Perfil",
       headerShown: false,
-      tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+      tabBarIcon: ({ color }) => <Ionicons size={28} name="person" color={color} />,
     }}
   />
   </Tabs>
