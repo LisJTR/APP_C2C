@@ -1,5 +1,5 @@
 // app/email-verification/[email].tsx
-import EmailVerification from "@/components/web/ScreensModal/EmailVerification";
+import EmailVerification from "@/components/Bridges/ModalsWeb/EmailVerification";
 import { useLocalSearchParams } from "expo-router";
 
 export default function EmailVerificationPage() {

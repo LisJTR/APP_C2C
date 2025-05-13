@@ -1,10 +1,9 @@
-// app/members/[query].tsx
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import Header from "../../components/web/Header";
-import Footer from "../../components/web/Footer";
-import AuthModal from "../../components/web/ScreensModal/AuthModalWeb";
-import { Platform } from "react-native";
+import Header from "../../components/Bridges/HeadersWeb/Header";
+import Footer from "../../components/Bridges/HeadersWeb/Footer";
+import AuthModal from "../../components/Bridges/ModalsWeb/AuthModal";
+import { View, Text, StyleSheet, Platform, ScrollView } from "react-native";
 
 export default function MembersPage() {
   const { query } = useLocalSearchParams();
@@ -28,46 +27,52 @@ export default function MembersPage() {
   if (Platform.OS !== "web") return null;
 
   return (
-    <div style={{ backgroundColor: "#fff" }}>
+    <ScrollView style={styles.page}>
       <Header onLoginPress={() => setShowModal(true)} onSearch={() => {}} />
 
-      <div style={styles.container}>
-        <h2 style={styles.title}>Buscar miembros</h2>
+      <View style={styles.container}>
+        <Text style={styles.title}>Buscar miembros</Text>
 
         {members.length === 0 ? (
-          <p style={styles.noResults}>No hay resultados.</p>
+          <Text style={styles.noResults}>No hay resultados.</Text>
         ) : (
-          <div style={styles.grid}>
+          <View style={styles.grid}>
             {members.map((member: any) => (
-              <div key={member.id} style={styles.card}>
-                <div style={styles.avatar}>
-                  {member.username?.charAt(0).toUpperCase() || "?"}
-                </div>
-                <div>
-                  <div style={styles.username}>{member.username}</div>
-                  <div style={styles.subtitle}>Aún no hay valoraciones</div>
-                </div>
-              </div>
+              <View key={member.id} style={styles.card}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarLetter}>
+                    {member.username?.charAt(0).toUpperCase() || "?"}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={styles.username}>{member.username}</Text>
+                  <Text style={styles.subtitle}>Aún no hay valoraciones</Text>
+                </View>
+              </View>
             ))}
-          </div>
+          </View>
         )}
-      </div>
+      </View>
 
       <Footer />
       <AuthModal visible={showModal} onClose={() => setShowModal(false)} />
-    </div>
+    </ScrollView>
   );
 }
 
-const styles: { [key: string]: React.CSSProperties } = {
+const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   container: {
-    maxWidth: 1200,
-    margin: "40px auto",
-    padding: "0 20px",
+    paddingHorizontal: 20,
+    paddingTop: 30,
+    paddingBottom: 60,
   },
   title: {
     fontSize: 22,
-    fontWeight: 700,
+    fontWeight: "bold",
     marginBottom: 20,
   },
   noResults: {
@@ -75,35 +80,39 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: "#555",
   },
   grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-    gap: 20,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 16, // Si da error, quítalo y usa marginRight/marginBottom manualmente
   },
   card: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
+    width: "48%",
     backgroundColor: "#f1f5f9",
     borderRadius: 8,
     padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
   avatar: {
     width: 40,
     height: 40,
     backgroundColor: "#007AFF",
-    borderRadius: "50%",
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  avatarLetter: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 18,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
   },
   username: {
-    fontWeight: 600,
+    fontWeight: "600",
   },
   subtitle: {
     fontSize: 12,
     color: "#666",
   },
-};
+});

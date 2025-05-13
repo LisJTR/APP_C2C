@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from "expo-router";
 import { View, Text, StyleSheet, ScrollView, Platform } from "react-native";
-import Header from "@/components/web/Header";
-import Footer from "@/components/web/Footer";
-import ProductGrid from "@/components/web/products/ProductGrid";
-import AuthModal from "@/components/web/ScreensModal/AuthModalWeb";
+import Header from "@/components/Bridges/HeadersWeb/Header";
+import Footer from "@/components/Bridges/HeadersWeb/Footer";
+import ProductGrid from "@/components/Bridges/HeadersWeb/ProductGrid";
+import AuthModal from "@/components/Bridges/ModalsWeb/AuthModal";
 import { useState } from "react";
 
 export default function SearchPage() {

@@ -2,11 +2,11 @@
 import { View, Text, StyleSheet, Pressable, Platform, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
 import { usePathname } from "expo-router";
-import AuthModal from "../components/web/ScreensModal/AuthModalWeb";
-import Header from "../components/web/Header";
-import HeroSection from "../components/web/HeroSection";
-import ProductGrid from "../components/web/products/ProductGrid";
-import Footer from "../components/web/Footer";
+import AuthModal from "../components/Bridges/ModalsWeb/AuthModal";
+import Header from "../components/Bridges/HeadersWeb/Header";
+import HeroSection from "../components/Bridges/HeadersWeb/HeroSection";
+import ProductGrid from "../components/Bridges/HeadersWeb/ProductGrid";
+import Footer from "../components/Bridges/HeadersWeb/Footer";
 import { useTranslation } from "react-i18next";
 
 export default function WelcomeScreen() {
@@ -26,7 +26,7 @@ export default function WelcomeScreen() {
       {Platform.OS === "web" ? (
         <>
           <View style={{ position: "relative", zIndex: 10 }}>
-          <Header onLoginPress={() => setShowModal(true)} onSearch={(q) => setSearchQuery(q)} />
+          <Header onLoginPress={() => setShowModal(true)} onSearch={(q: string) => setSearchQuery(q)} />
           </View>
 
           <ScrollView
