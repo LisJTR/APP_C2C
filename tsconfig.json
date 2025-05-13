@@ -9,7 +9,9 @@
     "skipLibCheck": true,              // ✅ Evita errores en dependencias de terceros
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
     "types": ["jest", "react-native"]  // ✅ Asegura que tipos como useEffect estén disponibles
   },
