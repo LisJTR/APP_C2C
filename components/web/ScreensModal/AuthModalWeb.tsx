@@ -66,7 +66,7 @@ export default function AuthModalWeb({
             });
   
             handleClose();
-            router.replace("/(tabs)/profile");
+            router.replace("/(webfrontend)");
           } else {
             alert(result.message || "No se pudo iniciar sesión con Google");
           }
@@ -92,7 +92,7 @@ export default function AuthModalWeb({
           //id: "facebook123",
         });
         handleClose();
-        router.replace("./(tabs)");
+        router.replace("/(webfrontend)");
       }
     };
     handleFacebookLogin();

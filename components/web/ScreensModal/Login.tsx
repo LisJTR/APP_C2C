@@ -57,7 +57,7 @@ export default function LoginScreen({ onClose }: { onClose: () => void }) {
         if (result.token && result.user) {
           login(result.token, result.user);
           onClose();
-          router.replace("/(tabs)/home");
+          router.replace("/(webfrontend)");
         } else {
           setGeneralError(result.message || "Error al iniciar sesión.");
         }
