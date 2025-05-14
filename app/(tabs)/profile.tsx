@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { updateUser as updateUserApi } from "../../api/api.js"; // ajusta si es necesario
+
 import {
   View,
   Text,
@@ -79,11 +81,15 @@ export default function ProfileScreen() {
         const filePath = `avatars/${user.id}-${Date.now()}.jpg`;
 
         const { error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(filePath, arrayBuffer, {
-            contentType: "image/jpeg",
-            upsert: true,
-          });
+  .from("avatars")
+  .upload(filePath, arrayBuffer, {
+    contentType: "image/jpeg",
+    upsert: true,
+    metadata: {
+      owner: user.id  // asegúrate de que `user.id` es el UUID del usuario autenticado
+    }
+  });
+
 
         if (uploadError) {
           console.error("🟥 Error al subir imagen:", uploadError);
@@ -96,16 +102,7 @@ export default function ProfileScreen() {
 
         const token = useAuthStore.getState().token;
 
-        await axios.put(
-          `${API_BASE_URL}/users/update`, // Dinámico
-          { avatar_url: publicUrl },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            timeout: 30000,
-          }
-        );
+       await updateUserApi(token, { avatar_url: publicUrl });
 
         updateUser({ ...user, avatar_url: publicUrl });
         setAvatarUrl(publicUrl);
@@ -120,32 +117,30 @@ export default function ProfileScreen() {
   };
 
   const handleSave = async () => {
-    try {
-      setLoading(true);
-      const token = useAuthStore.getState().token;
+  try {
+    setLoading(true);
+    const token = useAuthStore.getState().token;
 
-      console.log("🟣 TOKEN ACTUAL:", token); // <- AQUÍ
+    const result = await updateUserApi(token, {
+      username,
+      location,
+      bio,
+    });
 
-      await axios.put(
-        `${API_BASE_URL}/users/update`,
-        { username, location, bio },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          timeout: 30000,
-        }
-      );
-
+    if (result.user) {
       updateUser({ ...user, username, location, bio });
       Alert.alert("✅ Perfil actualizado");
-    } catch (error) {
-      console.error("🟥 Error al actualizar perfil:", error);
-      Alert.alert("Error", "No se pudo actualizar el perfil");
-    } finally {
-      setLoading(false);
+    } else {
+      Alert.alert("Error", result.message || "No se pudo actualizar el perfil");
     }
-  };
+  } catch (error) {
+    console.error("🟥 Error al actualizar perfil:", error);
+    Alert.alert("Error", "No se pudo actualizar el perfil");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
