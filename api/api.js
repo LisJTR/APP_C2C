@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://192.168.1.34:5000/api"; // Cambia esto si usas un móvil físico
+const API_URL = "http://192.168.1.36:5000/api"; // Cambia esto si usas un móvil físico
 
 const api = axios.create({
   baseURL: API_URL,
@@ -34,10 +34,10 @@ export const loginUser = async (identifier, password) => {
     });
     return response.data;
   } catch (error) {
-    console.error("❌ Error login:", error.response?.data || error);
     return error.response?.data || { message: "Error en el inicio de sesión" };
   }
 };
+
 
 export const getUserProfile = async (token) => {
   try {
@@ -50,18 +50,27 @@ export const getUserProfile = async (token) => {
   }
 };
 
-export const updateUser = async (token, username, email) => {
+
+export const updateUser = async (token, userData) => {
   try {
     const response = await axios.put(
-      `${API_URL}/users/update`,
-      { username, email },
-      { headers: { Authorization: `Bearer ${token}` } }
+      `${API_BASE_URL}/users/update`,
+      userData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        timeout: 30000,
+      }
     );
     return response.data;
   } catch (error) {
-    return error.response?.data || { message: "Error al actualizar usuario" };
+    console.error("❌ Error al actualizar perfil:", error);
+    return error.response?.data || { message: "Error al actualizar perfil" };
   }
 };
+
+
 
 export const deleteUser = async (token) => {
   try {
