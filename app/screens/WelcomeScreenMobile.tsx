@@ -79,8 +79,8 @@ const loginWithGoogleToken = async (token: string) => {
       <View style={styles.header}>
         <TouchableOpacity onPress={() => setLanguageModalVisible(true)}>
           <Text style={styles.language}>
-            🌐 {languages.find((l) => l.code === selectedLanguage)?.label}
-          </Text>
+             🌐 {String(languages.find((l) => l.code === selectedLanguage)?.label || "")}
+            </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.replace("/(tabs)/home")}>
           <Text style={styles.skip}>{t("welcomeScreenMobile.skip")}</Text>
