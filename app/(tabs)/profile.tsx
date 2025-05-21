@@ -14,10 +14,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
-import { supabase } from "../../utils/supabaseClient";
+
 import Avatar from "../Avatar";
-import { decode } from "base64-arraybuffer";
-import * as FileSystem from "expo-file-system";
+
 import { API_BASE_URL } from "../../utils/config";
 import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
@@ -37,115 +36,126 @@ export default function ProfileScreen() {
   const router = useRouter();
 
 
-  useEffect(() => {
-    loadUser();
-  }, []);
+    useEffect(() => {
+      loadUser();
+    }, []);
 
-  useEffect(() => {
-    if (user) {
-      setUsername(user.username || "");
-      setLocation(user.location || "");
-      setBio(user.bio || "");
-      setAvatarUrl(user.avatar_url || "");
+    useEffect(() => {
+      if (user) {
+        setUsername(user.username || "");
+        setLocation(user.location || "");
+        setBio(user.bio || "");
+        setAvatarUrl(user.avatar_url || "");
+      }
+    }, [user]);
+
+    if (!user) {
+      return (
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      );
     }
-  }, [user]);
 
-  if (!user) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
-    );
-  }
+        const handlePickImage = async () => {
+      console.log("🟢 handlePickImage se ha ejecutado");
+      const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      console.log("🔐 Permiso concedido:", granted);
+      if (!granted) {
+        Alert.alert("Permiso denegado", "Se necesita acceso a la galería");
+        return;
+      }
 
-  const handlePickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-      base64: false,
-    });
+
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.7,
+      });
+
+      console.log("🧪 Resultado del picker:", result);
+
 
     if (!result.canceled && result.assets.length > 0) {
       const image = result.assets[0];
+      const formData = new FormData();
+
+      formData.append("image", {
+      uri: image.uri,
+      type: "image/jpeg",
+      name: `avatar-${Date.now()}.jpg`,
+    } as any);
 
       try {
         setLoading(true);
+        console.log("📸 Imagen seleccionada:", image.uri);
+        console.log("📤 Enviando a:", `${API_BASE_URL}/upload`);
+        console.log("📦 FormData:", formData);
+        const uploadResponse = await axios.post(
+          `${API_BASE_URL}/upload`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
-        const base64 = await FileSystem.readAsStringAsync(image.uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
+        console.log("✅ Respuesta del backend:", uploadResponse.data);
+        const imageUrl = `${API_BASE_URL.split("/api")[0]}${uploadResponse.data.imageUrl}`;
 
-        const arrayBuffer = decode(base64);
-        const filePath = `avatars/${user.id}-${Date.now()}.jpg`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(filePath, arrayBuffer, {
-            contentType: "image/jpeg",
-            upsert: true,
-          });
-
-        if (uploadError) {
-          console.error("🟥 Error al subir imagen:", uploadError);
-          Alert.alert("Error", "No se pudo subir la imagen.");
-          return;
-        }
-
-        const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-        const publicUrl = data.publicUrl;
-
+        // Actualizar usuario con nueva imagen
         const token = useAuthStore.getState().token;
 
         await axios.put(
-          `${API_BASE_URL}/users/update`, // Dinámico
-          { avatar_url: publicUrl },
+          `${API_BASE_URL}/users/update`,
+          { avatar_url: imageUrl },
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-            timeout: 30000,
           }
         );
 
-        updateUser({ ...user, avatar_url: publicUrl });
-        setAvatarUrl(publicUrl);
-        Alert.alert("✅ Avatar actualizado");
+        updateUser({ ...user, avatar_url: imageUrl });
+        setAvatarUrl(imageUrl);
+        Alert.alert("✅ Imagen actualizada correctamente");
+
       } catch (err) {
-        console.error("🟥 Error general:", err);
-        Alert.alert("Error", "No se pudo subir la imagen.");
+        console.error("🟥 Error al subir imagen:", err);
+        Alert.alert("Error", "No se pudo subir la imagen");
       } finally {
         setLoading(false);
       }
     }
   };
 
-  const handleSave = async () => {
-    try {
-      setLoading(true);
-      const token = useAuthStore.getState().token;
+      const handleSave = async () => {
+      try {
+        setLoading(true);
+        const token = useAuthStore.getState().token;
 
-      console.log("🟣 TOKEN ACTUAL:", token); // <- AQUÍ
+        await axios.put(
+          `${API_BASE_URL}/users/update`,
+          { username, location, bio },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      await axios.put(
-        `${API_BASE_URL}/users/update`,
-        { username, location, bio },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          timeout: 30000,
-        }
-      );
+        updateUser({ ...user, username, location, bio });
+        Alert.alert("✅ Perfil actualizado correctamente");
+      } catch (error) {
+        console.error("🟥 Error al actualizar perfil:", error);
+        Alert.alert("Error", "No se pudo actualizar el perfil");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      updateUser({ ...user, username, location, bio });
-      Alert.alert("✅ Perfil actualizado");
-    } catch (error) {
-      console.error("🟥 Error al actualizar perfil:", error);
-      Alert.alert("Error", "No se pudo actualizar el perfil");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -179,9 +189,9 @@ export default function ProfileScreen() {
       </View>
   
       {/* Avatar */}
-      <TouchableOpacity style={styles.avatarButton} onPress={handlePickImage}>
-        <Avatar uri={avatarUrl} size={120} />
-      </TouchableOpacity>
+      <View style={styles.avatarButton}>
+        <Avatar uri={avatarUrl} size={120} onPress={handlePickImage} />
+      </View>
   
       {/* Campos editables */}
       <TextInput style={styles.input} value={username} onChangeText={setUsername} />

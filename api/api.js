@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://192.168.1.34:5000/api"; // Cambia esto si usas un móvil físico
+const API_URL = "http://192.168.1.38:5000/api"; // Cambia esto si usas un móvil físico
 
 const api = axios.create({
   baseURL: API_URL,

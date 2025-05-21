@@ -28,7 +28,11 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.anonymous.miappvinted",
-      "runtimeVersion": "1.0.0"
+      "runtimeVersion": "1.0.0",
+      "permissions": [
+       "CAMERA",
+       "READ_MEDIA_IMAGES"
+      ]
     },
     "web": {
       "bundler": "metro",

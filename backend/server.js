@@ -11,6 +11,7 @@ import userRoutes from "./controllers/userRoutes.js";
 import productRoutes from "./controllers/productRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import uploadRoutes from "./controllers/uploadRoutes.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +27,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", productRoutes);
+app.use("/api", uploadRoutes);
+
 
 // Servir archivos estáticos (imágenes subidas)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
