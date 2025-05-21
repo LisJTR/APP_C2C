@@ -103,8 +103,8 @@ export default function ProfileScreen() {
         );
 
         console.log("✅ Respuesta del backend:", uploadResponse.data);
-        const imageUrl = `${API_BASE_URL.split("/api")[0]}${uploadResponse.data.imageUrl}`;
-
+        const imageUrl = uploadResponse.data.imageUrl; // solo "/uploads/xxx.jpg"
+        
         // Actualizar usuario con nueva imagen
         const token = useAuthStore.getState().token;
 

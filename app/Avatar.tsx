@@ -1,16 +1,21 @@
 import { Image, TouchableOpacity, StyleSheet } from "react-native";
+import {  STATIC_HOST  } from "../utils/config";
+
+
 
 interface AvatarProps {
   uri: string | null | undefined;
   size?: number;
-  onPress?: () => void; // ✅ opcional: solo se pasa si quieres que sea interactivo
+  onPress?: () => void;
 }
 
 export default function Avatar({ uri, size = 32, onPress }: AvatarProps) {
+  const fullUri = uri?.startsWith("/uploads") ? `${ STATIC_HOST }${uri}` : uri; 
+
   return (
     <TouchableOpacity
       onPress={onPress}
-      disabled={!onPress} // ✅ si no se pasa `onPress`, no es interactivo
+      disabled={!onPress}
       style={[
         styles.avatar,
         {
@@ -20,9 +25,9 @@ export default function Avatar({ uri, size = 32, onPress }: AvatarProps) {
         },
       ]}
     >
-      {uri && (
+      {fullUri && (
         <Image
-          source={{ uri }}
+          source={{ uri: fullUri }}
           style={{
             width: "100%",
             height: "100%",
