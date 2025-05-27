@@ -3,7 +3,6 @@ import { persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types/types";
 
-
 // 📌 Estado de autenticación
 interface AuthState {
   token: string | null;
@@ -11,7 +10,8 @@ interface AuthState {
   login: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
-  updateUser: (newUser: User) => Promise<void>; // 🔥 nuevo
+  updateUser: (newUser: User) => Promise<void>;
+  setUser: (user: User) => void; // ✅ agregado para actualizar en el estado
 }
 
 // 📌 Zustand con persistencia
@@ -20,6 +20,8 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       token: null,
       user: null,
+
+      setUser: (user) => set({ user }), // ✅ Añadido aquí
 
       // 📌 Iniciar sesión
       login: async (token, user) => {

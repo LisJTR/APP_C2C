@@ -18,7 +18,6 @@ import {
   HelpCircle,
 } from "lucide-react";
 import LanguageSelector from "../../../components/web/LanguageSelector";
-import "../../../components/web/LanguageSelector.css";
 import { usePathname, useRouter } from "expo-router";
 import { Platform as RNPlatform } from "react-native";
 import * as SecureStore from "expo-secure-store";
@@ -35,9 +34,11 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("articles");
   const ref = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
   const [searchTerm, setSearchTerm] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     if (pathname.startsWith("/members")) setSelected("members");
@@ -46,7 +47,7 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
 
   const handleLogout = async () => {
     if (RNPlatform.OS === "web") {
-      localStorage.removeItem("token");
+      sessionStorage.removeItem("token");
     } else {
       await SecureStore.deleteItemAsync("token");
     }
@@ -92,6 +93,7 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -124,23 +126,10 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
                 {MENU_OPTIONS.find((opt) => opt.id === selected)?.label || "Seleccionar"}{" "}
                 <ChevronDown size={16} strokeWidth={3} className="arrow" />
               </button>
-
               {open && (
-                <div
-                  className="lang-dropdown"
-                  style={{
-                    position: "absolute",
-                    top: `${dropdownCoords.top}px`,
-                    left: `${dropdownCoords.left - 530}px`,
-                    zIndex: 9999,
-                  }}
-                >
+                <div className="lang-dropdown" style={{ position: "absolute", top: `${dropdownCoords.top}px`, left: `${dropdownCoords.left - 530}px`, zIndex: 9999 }}>
                   {MENU_OPTIONS.map((option) => (
-                    <div
-                      key={option.id}
-                      className={`lang-option ${selected === option.id ? "active" : ""}`}
-                      onClick={() => handleSelect(option.id)}
-                    >
+                    <div key={option.id} className={`lang-option ${selected === option.id ? "active" : ""}`} onClick={() => handleSelect(option.id)}>
                       {option.label}
                     </div>
                   ))}
@@ -179,27 +168,37 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
           <TouchableOpacity style={styles.iconButton}><MessageCircle size={22} color="#444" /></TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}><Heart size={22} color="#444" /></TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}><Bell size={22} color="#444" /></TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}><User size={22} color="#444" /></TouchableOpacity>
+
+          {/* Perfil */}
+          <div style={{ position: "relative" }} ref={profileRef}>
+            <TouchableOpacity style={styles.iconButton} onPress={() => setProfileOpen((prev) => !prev)}>
+              <User size={22} color="#444" />
+            </TouchableOpacity>
+            {profileOpen && (
+              <div style={styles.profileDropdown}>
+                <div className="profile-item" onClick={() => { setProfileOpen(false);
+                  router.push("/profile");
+                    }}>Mi perfil</div>
+                <div className="profile-item">Ajustes</div>
+                <div className="profile-item">Personalización</div>
+                <div className="profile-item">Mi saldo <span style={{ float: "right" }}>0,00 €</span></div>
+                <div className="profile-item">Mis pedidos</div>
+                <div className="profile-item">Donativos</div>
+                <div className="profile-item" onClick={handleLogout} style={{ color: "#1f2937" }}>
+                  Cerrar sesión
+                </div>
+              </div>
+            )}
+          </div>
+
           <TouchableOpacity style={styles.sellButton}><Text style={styles.sellText}>Vender ahora</Text></TouchableOpacity>
           <TouchableOpacity style={styles.helpIcon}><HelpCircle size={20} color="#444" /></TouchableOpacity>
           <LanguageSelector />
-          <button onClick={handleLogout} style={styles.logoutButton}>Salir</button>
         </View>
       </View>
 
       <View style={styles.navBar}>
-        {[
-          "Mujer",
-          "Hombre",
-          "Moda de diseño",
-          "Niños",
-          "Hogar",
-          "Electrónica",
-          "Entretenimiento",
-          "Mascotas",
-          "Sobre KCL Trading",
-          "Nuestra plataforma",
-        ].map((item) => (
+        {["Mujer", "Hombre", "Moda de diseño", "Niños", "Hogar", "Electrónica", "Entretenimiento", "Mascotas", "Sobre KCL Trading", "Nuestra plataforma"].map((item) => (
           <Text key={item} style={styles.navItem}>{item}</Text>
         ))}
       </View>
@@ -219,6 +218,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
     flexWrap: "wrap",
+    position: "relative",
+    zIndex: 9999,
   },
   searchSection: {
     flexDirection: "row",
@@ -357,8 +358,23 @@ const styles = StyleSheet.create({
   justifyContent: "center",
   alignItems: "center",
   cursor: "pointer",
-  marginRight: 10,
+  marginRight: 20,
 },
+ profileDropdown: {
+    position: "absolute",
+    top: 40,
+    right: 0,
+    backgroundColor: "#f7f7f7",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+    paddingVertical: 10,
+    width: 200,
+    zIndex: 9999,
+  },
   
 });
 
@@ -399,6 +415,19 @@ if (typeof document !== "undefined") {
      input:focus {
       outline: none !important;
       box-shadow: none !important;
+    }
+      .profile-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      color: #1f2937; /* gris oscuro */
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.2px;
+      transition: background-color 0.2s ease;
+    }
+    .profile-item:hover {
+      background-color:rgb(230, 227, 227);
     }
   `;
   document.head.appendChild(styleSheet);

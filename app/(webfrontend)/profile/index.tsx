@@ -1,0 +1,143 @@
+// app/(webfrontend)/profile/index.tsx
+
+import { useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
+import HeaderLoggedIn from "../components/HeaderLoggedIn";
+import Footer from "@/components/Bridges/HeadersWeb/Footer";
+import { useAuthStore } from "@/store/useAuthStore";
+import { getUserProfile } from "@/api/api";
+import { CheckCircle, MapPin, Clock, Users, Mail, ShieldCheck, Globe } from "lucide-react";
+import { useRouter } from "expo-router";
+
+export default function ProfilePage() {
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const token = useAuthStore((state) => state.token);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (token) {
+        const response = await getUserProfile(token);
+        if (response?.user) {
+          setUser(response.user);
+        }
+      }
+    };
+    fetchUser();
+  }, [token, setUser]);
+
+  return (
+    <ScrollView style={styles.page}>
+      <HeaderLoggedIn onSearch={() => {}} />
+
+      <View style={styles.container}>
+        <View style={styles.topSection}>
+          <Image
+            source={{ uri: user?.avatar_url || "https://i.imgur.com/k7J3tLw.png" }}
+            style={styles.avatar}
+          />
+          <View>
+            <Text style={styles.username}>{user?.username || ""}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => router.push("/(webfrontend)/profile/EditProfile")}
+          >
+            <Text style={styles.editText}>Editar perfil</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.infoSection}>
+          <View style={styles.column}>
+            <Text><MapPin size={14} /> {user?.location || ""}</Text>
+            <Text><Globe size={14} /> {user?.country_name || ""}</Text>
+            <Text><Clock size={14} /> Última conexión: hace 1 minuto</Text>
+            <Text><Users size={14} /> 0 Seguidores, 0 siguiendo</Text>
+          </View>
+          <View style={styles.column}>
+            {user?.is_verified ? (
+              <Text><CheckCircle size={14} /> Verificado</Text>
+            ) : (
+              <Text><ShieldCheck size={14} /> No verificado</Text>
+            )}
+            <Text><Mail size={14} /> {user?.email}</Text>
+          </View>
+        </View>
+
+        <View style={styles.tabs}>
+          <Text style={[styles.tabItem, styles.activeTab]}>Anuncios</Text>
+        </View>
+
+        <View style={styles.adsSection}>
+          <Text style={styles.badge}>Empieza una nueva racha de anuncios</Text>
+          <Text style={styles.tip}>Sube 5 artículos en 30 días para ganar la insignia de vendedor frecuente</Text>
+
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>Sube artículos para empezar a vender</Text>
+            <Text style={styles.emptyText}>Vende lo que ya no usas. ¡Es fácil y seguro!</Text>
+            <TouchableOpacity style={styles.uploadButton}>
+              <Text style={{ color: "#fff" }}>Subir ahora</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      <Footer />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  page: { flex: 1, backgroundColor: "#fff" },
+  container: { padding: 24 },
+  topSection: { flexDirection: "row", alignItems: "center", gap: 20 },
+  avatar: { width: 90, height: 90, borderRadius: 45, marginRight: 12 },
+  username: { fontSize: 20, fontWeight: "bold" },
+  editButton: {
+    marginLeft: "auto",
+    backgroundColor: "#f3f4f6",
+    padding: 10,
+    borderRadius: 6,
+  },
+  editText: { fontWeight: "500" },
+  infoSection: {
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  column: { flex: 1, gap: 6 },
+  tabs: {
+    marginTop: 30,
+    flexDirection: "row",
+    gap: 20,
+    borderBottomWidth: 1,
+    borderColor: "#e5e7eb",
+    paddingBottom: 10,
+  },
+  tabItem: { fontSize: 16, color: "#555" },
+  activeTab: {
+    fontWeight: "bold",
+    color: "#111",
+    borderBottomWidth: 2,
+    borderColor: "#007AFF",
+  },
+  adsSection: {
+    marginTop: 30,
+    padding: 20,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 12,
+  },
+  badge: { fontWeight: "600", fontSize: 14, marginBottom: 8 },
+  tip: { fontSize: 13, color: "#666", marginBottom: 20 },
+  emptyState: { alignItems: "center", marginTop: 30, gap: 8 },
+  emptyTitle: { fontSize: 16, fontWeight: "bold" },
+  emptyText: { fontSize: 13, color: "#555" },
+  uploadButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 6,
+    marginTop: 12,
+  },
+});

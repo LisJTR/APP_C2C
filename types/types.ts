@@ -7,6 +7,9 @@ export interface User {
   bio?: string;
   created_at?: string;
   balance?: number;
+  is_verified?: boolean;
+  country_id?: number;
+  country_name?: string;
 }
 
 export interface AuthResponse {

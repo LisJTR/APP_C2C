@@ -1,14 +1,18 @@
+// app/members/[query].tsx
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import Header from "../../components/Bridges/HeadersWeb/Header";
-import Footer from "../../components/Bridges/HeadersWeb/Footer";
-import AuthModal from "../../components/Bridges/ModalsWeb/AuthModal";
+import Header from "@/components/Bridges/HeadersWeb/Header";
+import HeaderLoggedIn from "../(webfrontend)/components/HeaderLoggedIn";
+import Footer from "@/components/Bridges/HeadersWeb/Footer";
+import AuthModal from "@/components/Bridges/ModalsWeb/AuthModal";
 import { View, Text, StyleSheet, Platform, ScrollView } from "react-native";
+import { isLoggedIn } from "@/utils/auth";
 
 export default function MembersPage() {
   const { query } = useLocalSearchParams();
   const [members, setMembers] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [logged, setLogged] = useState(false);
 
   const fetchMembers = async () => {
     try {
@@ -24,11 +28,23 @@ export default function MembersPage() {
     if (query) fetchMembers();
   }, [query]);
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const loggedIn = await isLoggedIn();
+      setLogged(loggedIn);
+    };
+    checkSession();
+  }, []);
+
   if (Platform.OS !== "web") return null;
 
   return (
     <ScrollView style={styles.page}>
-      <Header onLoginPress={() => setShowModal(true)} onSearch={() => {}} />
+      {logged ? (
+        <HeaderLoggedIn onSearch={() => {}} />
+      ) : (
+        <Header onLoginPress={() => setShowModal(true)} onSearch={() => {}} />
+      )}
 
       <View style={styles.container}>
         <Text style={styles.title}>Buscar miembros</Text>
@@ -83,7 +99,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    gap: 16, // Si da error, quítalo y usa marginRight/marginBottom manualmente
+    gap: 16,
   },
   card: {
     width: "48%",

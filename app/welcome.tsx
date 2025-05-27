@@ -1,17 +1,19 @@
-// app/welcome.tsx
 import { View, Text, StyleSheet, Pressable, Platform, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
-import { usePathname } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import AuthModal from "../components/Bridges/ModalsWeb/AuthModal";
 import Header from "../components/Bridges/HeadersWeb/Header";
 import HeroSection from "../components/Bridges/HeadersWeb/HeroSection";
 import ProductGrid from "../components/Bridges/HeadersWeb/ProductGrid";
 import Footer from "../components/Bridges/HeadersWeb/Footer";
 import { useTranslation } from "react-i18next";
+import { isLoggedIn } from "@/utils/auth"; // 👈 importante
 
 export default function WelcomeScreen() {
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -21,12 +23,30 @@ export default function WelcomeScreen() {
     }
   }, [pathname]);
 
+  // 👇 Redirigir si ya hay sesión
+  useEffect(() => {
+    const check = async () => {
+      const logged = await isLoggedIn();
+      if (logged) {
+        router.replace("/(webfrontend)"); // o "/home"
+      } else {
+        setLoading(false);
+      }
+    };
+    check();
+  }, []);
+
+  if (loading) return null;
+
   return (
     <View style={styles.container}>
       {Platform.OS === "web" ? (
         <>
           <View style={{ position: "relative", zIndex: 10 }}>
-          <Header onLoginPress={() => setShowModal(true)} onSearch={(q: string) => setSearchQuery(q)} />
+            <Header
+              onLoginPress={() => setShowModal(true)}
+              onSearch={(q: string) => setSearchQuery(q)}
+            />
           </View>
 
           <ScrollView
@@ -36,7 +56,7 @@ export default function WelcomeScreen() {
             <View style={styles.heroContainer}>
               <HeroSection onLoginPress={() => setShowModal(true)} />
             </View>
-            <ProductGrid onProductClick={() => setShowModal(true)}/>
+            <ProductGrid onProductClick={() => setShowModal(true)} />
             <Footer />
           </ScrollView>
         </>
@@ -61,6 +81,7 @@ export default function WelcomeScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

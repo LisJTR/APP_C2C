@@ -55,10 +55,19 @@ export default function LoginScreen({ onClose }: { onClose: () => void }) {
         setLoading(false);
   
         if (result.token && result.user) {
-          login(result.token, result.user);
-          onClose();
-          router.replace("/(webfrontend)");
-        } else {
+  // Guardar el token en sessionStorage
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem("token", result.token);
+  }
+
+  // Actualizar estado global
+  login(result.token, result.user);
+
+  // Cerrar modal y redirigir
+  onClose();
+  router.replace("/"); // o "/(webfrontend)" si esa es tu home real
+}
+ else {
           setGeneralError(result.message || "Error al iniciar sesión.");
         }
       }

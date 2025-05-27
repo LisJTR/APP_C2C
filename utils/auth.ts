@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 
 export const getToken = async (): Promise<string | null> => {
   if (Platform.OS === "web") {
-    return localStorage.getItem("token");
+    return sessionStorage.getItem("token"); // ✅ aquí es el cambio clave
   } else {
     return await SecureStore.getItemAsync("token");
   }

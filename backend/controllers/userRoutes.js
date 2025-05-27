@@ -1,20 +1,27 @@
+// backend/controllers/userRoutes.js
 import express from "express";
 import { body, validationResult } from "express-validator";
 import pool from "../config/db.js";
-import authMiddleware from "../middlewares/authMiddleware.js"; // Middleware para proteger rutas
+import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// 🛠 Middleware de validación para actualizar perfil
 const validateUpdate = [
   body("username").optional().notEmpty().withMessage("El nombre de usuario no puede estar vacío"),
   body("email").optional().isEmail().withMessage("Debe proporcionar un email válido"),
 ];
 
-// 🔹 Ruta protegida: Obtener perfil del usuario autenticado
 router.get("/profile", authMiddleware, async (req, res) => {
   try {
-    const user = await pool.query("SELECT id, username, email FROM users WHERE id = $1", [req.user.id]);
+    const user = await pool.query(
+      `SELECT 
+         u.id, u.username, u.email, u.location, u.bio, u.avatar_url, u.is_verified, u.created_at, 
+         u.country_id, c.name AS country_name
+       FROM users u
+       LEFT JOIN countries c ON u.country_id = c.id
+       WHERE u.id = $1`,
+      [req.user.id]
+    );
 
     if (user.rows.length === 0) {
       return res.status(404).json({ message: "Usuario no encontrado" });
@@ -27,21 +34,21 @@ router.get("/profile", authMiddleware, async (req, res) => {
   }
 });
 
-// 🔹 Ruta protegida: Actualizar perfil del usuario autenticado
 router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { username, email, location, bio, avatar_url } = req.body;
-
+  const { username, email, location, bio, avatar_url, country_id } = req.body;
 
   try {
     const userExists = await pool.query("SELECT * FROM users WHERE id = $1", [req.user.id]);
     if (userExists.rows.length === 0) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
+
+    console.log("🧠 Avatar URL recibido:", avatar_url?.substring(0, 100));
 
     const updatedUser = await pool.query(
       `UPDATE users 
@@ -50,12 +57,12 @@ router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
          email = COALESCE($2, email), 
          location = COALESCE($3, location), 
          bio = COALESCE($4, bio), 
-         avatar_url = COALESCE($5, avatar_url)
-       WHERE id = $6 
-       RETURNING id, username, email, location, bio, avatar_url`,
-      [username || null, email || null, location || null, bio || null, avatar_url || null, req.user.id]
+         avatar_url = COALESCE($5, avatar_url),
+         country_id = COALESCE($6, country_id)
+       WHERE id = $7 
+       RETURNING id, username, email, location, bio, avatar_url, is_verified, created_at, country_id`,
+      [username || null, email || null, location || null, bio || null, avatar_url || null, country_id || null, req.user.id]
     );
-    
 
     res.json({ message: "Perfil actualizado", user: updatedUser.rows[0] });
   } catch (error) {
@@ -64,24 +71,21 @@ router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
   }
 });
 
-  // 🔹 Eliminar usuario autenticado
-  router.delete("/delete", authMiddleware, async (req, res) => {
-    try {
-      const userExists = await pool.query("SELECT * FROM users WHERE id = $1", [req.user.id]);
-      if (userExists.rows.length === 0) {
-        return res.status(404).json({ message: "Usuario no encontrado" });
-      }
-  
-      await pool.query("DELETE FROM users WHERE id = $1", [req.user.id]);
-  
-      res.json({ message: "Usuario eliminado correctamente" });
-    } catch (error) {
-      console.error("Error al eliminar usuario:", error);
-      res.status(500).json({ message: "Error interno del servidor" });
+router.delete("/delete", authMiddleware, async (req, res) => {
+  try {
+    const userExists = await pool.query("SELECT * FROM users WHERE id = $1", [req.user.id]);
+    if (userExists.rows.length === 0) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
-  });
 
-  // Ruta para obtener usuarios verificados por nombre o parte del nombre
+    await pool.query("DELETE FROM users WHERE id = $1", [req.user.id]);
+    res.json({ message: "Usuario eliminado correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar usuario:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+});
+
 router.get("/search", async (req, res) => {
   const { query } = req.query;
 
@@ -99,7 +103,6 @@ router.get("/search", async (req, res) => {
   }
 });
 
-// controllers/userRoutes.js
 router.get("/suggestions", async (req, res) => {
   const query = req.query.query?.toLowerCase();
   if (!query) return res.json([]);
@@ -117,4 +120,14 @@ router.get("/suggestions", async (req, res) => {
   }
 });
 
-  export default router;
+router.get("/countries", async (req, res) => {
+  try {
+    const countries = await pool.query("SELECT id, name FROM countries ORDER BY name");
+    res.json(countries.rows);
+  } catch (err) {
+    console.error("Error al obtener países:", err);
+    res.status(500).json({ error: "Error al obtener la lista de países" });
+  }
+});
+
+export default router;
