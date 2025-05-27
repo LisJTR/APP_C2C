@@ -27,7 +27,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, email, password } = req.body;
+    const { username, email, password, location, bio, country_id } = req.body;
 
     try {
       const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
@@ -39,9 +39,11 @@ router.post(
       const hashedPassword = await bcrypt.hash(password, salt);
 
       const newUser = await pool.query(
-        "INSERT INTO users (username, email, password, verification_code) VALUES ($1, $2, $3, $4) RETURNING id, username, email",
-        [username, email, hashedPassword, verificationCode]
-      );      
+  `INSERT INTO users (username, email, password, verification_code, location, bio, country_id)
+   VALUES ($1, $2, $3, $4, $5, $6, $7)
+   RETURNING id, username, email, location, bio, country_id`,
+  [username, email, hashedPassword, verificationCode, location || null, bio || null, country_id || null]
+);      
 
       // Enviar correo
     await sendVerificationEmail(email, verificationCode);

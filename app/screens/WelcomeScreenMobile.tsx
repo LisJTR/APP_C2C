@@ -8,6 +8,7 @@ import {
   FlatList,
   SafeAreaView,
   Modal,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
@@ -105,14 +106,16 @@ const loginWithGoogleToken = async (token: string) => {
       <Text style={styles.modalTitle}>{t("welcomeScreenMobile.register")}</Text>
       <Text style={styles.modalSubtitle}>{t("welcomeScreenMobile.begin")}</Text>
 
-      <TouchableOpacity style={styles.socialButton} onPress={() => googleLogin()}>
+  {/* <TouchableOpacity style={styles.socialButton} onPress={() => googleLogin()}>*/}
+  <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert("Futura implementación", "Esta funcionalidad estará disponible próximamente.")}>
   <View style={styles.socialContent}>
     <FontAwesome name="google" size={20} color="#DB4437" style={styles.icon} />
     <Text style={styles.socialText}>{t("welcomeScreenMobile.continueGoogle")}</Text>
   </View>
 </TouchableOpacity>
 
-<TouchableOpacity style={styles.socialButton}>
+{/*<TouchableOpacity style={styles.socialButton}>*/}
+<TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert("Futura implementación", "Esta funcionalidad estará disponible próximamente.")}>
   <View style={styles.socialContent}>
     <FontAwesome name="facebook" size={20} color="#1877F2" style={styles.icon} />
     <Text style={styles.socialText}>{t("welcomeScreenMobile.continueFacebook")}</Text>
@@ -148,15 +151,16 @@ const loginWithGoogleToken = async (token: string) => {
 
 
       <Text style={styles.modalTitle}>{t("welcomeScreenMobile.register")}</Text>
-
-      <TouchableOpacity style={styles.socialButton} onPress={() => googleLogin()}>
+ {/* <TouchableOpacity style={styles.socialButton} onPress={() => googleLogin()}>*/}
+  <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert("Futura implementación", "Esta funcionalidad estará disponible próximamente.")}>
   <View style={styles.socialContent}>
     <FontAwesome name="google" size={20} color="#DB4437" style={styles.icon} />
     <Text style={styles.socialText}>{t("welcomeScreenMobile.continueGoogle")}</Text>
   </View>
 </TouchableOpacity>
 
-<TouchableOpacity style={styles.socialButton}>
+{/*<TouchableOpacity style={styles.socialButton}>*/}
+<TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert("Futura implementación", "Esta funcionalidad estará disponible próximamente.")}>
   <View style={styles.socialContent}>
     <FontAwesome name="facebook" size={20} color="#1877F2" style={styles.icon} />
     <Text style={styles.socialText}>{t("welcomeScreenMobile.continueFacebook")}</Text>
@@ -227,8 +231,8 @@ const loginWithGoogleToken = async (token: string) => {
                 key={lang.code}
                 style={styles.languageOption}
                 onPress={() => {
-                  i18n.changeLanguage(lang.code);      // cambia el idioma de toda la app
-                  setSelectedLanguage(lang.code);      // cambia el botón seleccionado
+                  i18n.changeLanguage(lang.code);    
+                  setSelectedLanguage(lang.code);    
                 }}
               >
                 <Text style={styles.languageLabel}>

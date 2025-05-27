@@ -17,6 +17,9 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [location, setLocation] = useState("");
+  const [bio, setBio] = useState("");
+  const [countryId, setCountryId] = useState("");
 
   const [offersChecked, setOffersChecked] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
@@ -114,6 +117,27 @@ const animatedIconStyle = useAnimatedStyle(() => ({
         keyboardType="email-address"
       />
       {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+
+      <TextInput
+        placeholder="Ubicación"
+        style={styles.input}
+        value={location}
+        onChangeText={setLocation}
+      />
+
+      <TextInput
+        placeholder="Biografía"
+        style={styles.input}
+        value={bio}
+        onChangeText={setBio}
+      />
+
+      <TextInput
+        placeholder="ID del país (opcional)"
+        style={styles.input}
+        value={countryId}
+        onChangeText={setCountryId}
+      />
 
       <View style={styles.passwordContainer}>
   <TextInput

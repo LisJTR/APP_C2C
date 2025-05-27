@@ -2,7 +2,7 @@
 
 import axios from "axios";
 
-const API_URL = "http://192.168.1.136:5000/api"; // Cambia esto si usas un móvil físico
+const API_URL = "http://192.168.1.38:5000/api"; // Cambia esto si usas un móvil físico
 
 const api = axios.create({
   baseURL: API_URL,
@@ -10,7 +10,7 @@ const api = axios.create({
  
 });
 
-export const registerUser = async (username, email, password) => {
+export const registerUser = async (username, email, password, location, bio, country_id) => {
   try {
     console.log("📌 Enviando datos al backend:", { username, email, password });
 
@@ -18,6 +18,9 @@ export const registerUser = async (username, email, password) => {
       username,
       email,
       password,
+      location,
+      bio,
+      country_id
     });
     console.log("📌 Respuesta del backend:", response.data);
 

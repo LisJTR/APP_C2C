@@ -67,7 +67,6 @@ router.get("/products/suggestions", async (req, res) => {
     res.status(500).json({ error: "Error interno al obtener sugerencias" });
   }
 });
-
 // Obtener un producto específico por ID
 router.get("/products/:id", async (req, res) => {
   const { id } = req.params;
@@ -105,6 +104,5 @@ router.get("/products/:id", async (req, res) => {
     res.status(500).json({ error: "Error interno al obtener producto" });
   }
 });
-
 
 export default router;
