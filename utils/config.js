@@ -1,4 +1,4 @@
-const localIp = "192.168.1.36"; // Cámbialo a la IP real de tu PC (como ya hiciste)
+const localIp = "192.168.1.38"; // Cámbialo a la IP real de tu PC (como ya hiciste)
 
 export const API_BASE_URL =
   process.env.NODE_ENV === "development"

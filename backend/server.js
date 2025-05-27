@@ -13,6 +13,7 @@ import productRoutes from "./controllers/productRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import uploadRoutes from "./controllers/uploadRoutes.js";
+import orderRoutes from "./controllers/orderRoutes.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,6 +38,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", productRoutes);
 app.use("/api", uploadRoutes);
+app.use("/api/orders", orderRoutes);
+
 
 // 🛠 Rutas
 app.use("/api/auth", authRoutes);

@@ -68,4 +68,43 @@ router.get("/products/suggestions", async (req, res) => {
   }
 });
 
+// Obtener un producto específico por ID
+router.get("/products/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Consulta del producto (sin image_url)
+    const productResult = await pool.query(
+      `SELECT * FROM products WHERE id = $1`,
+      [id]
+    );
+
+    if (productResult.rows.length === 0) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
+
+    const product = productResult.rows[0];
+
+    // Consulta de todas las imágenes asociadas
+    const imagesResult = await pool.query(
+      `SELECT image_url FROM product_images WHERE product_id = $1 ORDER BY id ASC`,
+      [id]
+    );
+
+    const images = imagesResult.rows.map(row => row.image_url);
+
+    // Adjuntar imágenes al objeto del producto
+    product.images = images;
+
+    // Para compatibilidad: también asignamos la primera imagen como image_url
+    product.image_url = images[0] || null;
+
+    res.json(product);
+  } catch (error) {
+    console.error("❌ Error al obtener producto por ID:", error);
+    res.status(500).json({ error: "Error interno al obtener producto" });
+  }
+});
+
+
 export default router;

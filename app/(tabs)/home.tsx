@@ -1,3 +1,4 @@
+//app/tabs/home.tsx
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, Image } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -5,6 +6,10 @@ import axios from "axios";
 import { API_BASE_URL } from "@/utils/config";
 import { ALL_CATEGORIES } from "@/constants/categories";
 import { Product } from "@/types/Product";
+import { useRouter } from "expo-router";
+import { TouchableOpacity } from "react-native";
+
+
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -34,6 +39,8 @@ export default function HomeScreen() {
 
     fetchProducts();
   }, [selectedCategory, query]);
+
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -78,15 +85,20 @@ export default function HomeScreen() {
         numColumns={2}
         columnWrapperStyle={{ justifyContent: "space-between" }}
         renderItem={({ item }) => (
-          <View style={styles.productCard}>
-            <Text style={styles.productTitle}>{item.title}</Text>
-            {item.image_url && (
-              <Image source={{ uri: item.image_url }} style={styles.productImage} />
-            )}
-            <Text>{item.price}€</Text>
-            <Text>{item.size}</Text>
-          </View>
-        )}
+  <TouchableOpacity
+    style={styles.productCard}
+   onPress={() => router.push(`/product/${item.id}`)}
+
+  >
+    <Text style={styles.productTitle}>{item.title}</Text>
+    {item.image_url && (
+      <Image source={{ uri: item.image_url }} style={styles.productImage} />
+    )}
+    <Text>{item.price}€</Text>
+    <Text>{item.size}</Text>
+  </TouchableOpacity>
+)}
+
       />
     </View>
   );
@@ -142,11 +154,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   productImage: {
-    width: "100%",
-    height: 120,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
+  width: "100%",
+  aspectRatio: 1, // cuadrado
+  resizeMode: "contain", // <-- CLAVE
+  borderRadius: 8,
+  marginBottom: 8,
+},
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",

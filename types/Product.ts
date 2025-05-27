@@ -9,5 +9,7 @@ export interface Product {
     condition: string;
     brand: string;
     category: string;
+    user_id: number; 
+     images?: string[]; 
   }
   

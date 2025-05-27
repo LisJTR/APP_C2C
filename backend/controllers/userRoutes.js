@@ -119,15 +119,40 @@ router.get("/suggestions", async (req, res) => {
     res.status(500).json({ error: "Error del servidor" });
   }
 });
-
-router.get("/countries", async (req, res) => {
+// ✅ Ruta pública para obtener un usuario por ID
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
   try {
-    const countries = await pool.query("SELECT id, name FROM countries ORDER BY name");
-    res.json(countries.rows);
-  } catch (err) {
-    console.error("Error al obtener países:", err);
-    res.status(500).json({ error: "Error al obtener la lista de países" });
+    const result = await pool.query('SELECT id, username, email, location, bio, avatar_url FROM users WHERE id = $1',[id]);
+
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('❌ Error al obtener usuario por ID:', error);
+    res.status(500).json({ error: 'Error interno al obtener usuario' });
   }
 });
+
+// Obtener productos publicados por un usuario
+router.get("/:id/products", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      "SELECT p.*, pi.image_url FROM products p LEFT JOIN LATERAL (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY id ASC LIMIT 1) pi ON true WHERE user_id = $1",
+      [id]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("❌ Error al obtener productos del usuario:", error);
+    res.status(500).json({ error: "Error al obtener productos del usuario" });
+  }
+});
+
 
 export default router;
