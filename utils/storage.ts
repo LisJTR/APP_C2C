@@ -1,10 +1,11 @@
+// utils/storage.ts
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
 // Almacenar un valor
 export const saveToken = async (key: string, value: string) => {
   if (Platform.OS === "web") {
-    localStorage.setItem(key, value);
+    sessionStorage.setItem(key, value); // ✅ solo en la sesión del navegador
   } else {
     await SecureStore.setItemAsync(key, value);
   }
@@ -13,7 +14,7 @@ export const saveToken = async (key: string, value: string) => {
 // Obtener un valor
 export const getToken = async (key: string): Promise<string | null> => {
   if (Platform.OS === "web") {
-    return localStorage.getItem(key);
+    return sessionStorage.getItem(key); // ✅ se borra al cerrar pestaña
   } else {
     return await SecureStore.getItemAsync(key);
   }
@@ -22,7 +23,7 @@ export const getToken = async (key: string): Promise<string | null> => {
 // Eliminar un valor
 export const deleteToken = async (key: string) => {
   if (Platform.OS === "web") {
-    localStorage.removeItem(key);
+    sessionStorage.removeItem(key); // ✅ compatible con el cambio
   } else {
     await SecureStore.deleteItemAsync(key);
   }

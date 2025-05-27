@@ -1,9 +1,12 @@
 // app/index.tsx
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import Header from "../../components/web/Header";
 import HeaderLoggedIn from "./components/HeaderLoggedIn";
 import { isLoggedIn } from "@/utils/auth";
+import BoddyLoggin from "../(webfrontend)/components/BoddyLoggin";
+import ProductGrid from "../../components/web/products/ProductGrid";
+import Footer from "../../components/web/Footer";
+import { ScrollView, View } from "react-native";
 
 export default function Index() {
   const router = useRouter();
@@ -13,32 +16,39 @@ export default function Index() {
   useEffect(() => {
     const checkSession = async () => {
       const loggedIn = await isLoggedIn();
-      if (!loggedIn) {
-        setLogged(false);
-        setLoading(false); // Mostrar Header normal
-      } else {
-        setLogged(true);
-        setLoading(false); // Mostrar Header logueado
-      }
+      setLogged(loggedIn);
+      setLoading(false);
     };
     checkSession();
   }, []);
 
-  if (loading) return null; // Spinner si deseas
+  useEffect(() => {
+    if (!loading && !logged) {
+      router.replace("/welcome");
+    }
+  }, [loading, logged]);
+
+  if (loading) return null;
 
   return (
     <>
-      {logged ? (
-        <HeaderLoggedIn onSearch={(query) => console.log("Buscando:", query)} />
-      ) : (
-        <Header
-          onLoginPress={() => router.push("/welcome")} // abre modal o redirige
-          onSearch={(query) => console.log("Buscar:", query)} // reemplaza según tu lógica
-        />
+      {logged && (
+        <>
+           <HeaderLoggedIn onSearch={(query) => console.log("Buscando:", query)} />
+          <ScrollView
+            style={{ flex: 1, backgroundColor: "#fff" }}
+            contentContainerStyle={{ paddingBottom: 60 }}
+          >
+            <View style={{ backgroundColor: "#fff" }}>
+              <BoddyLoggin onLoginPress={() => {}} />
+              <View style={{ paddingHorizontal: 32, marginTop: -40 }}>
+                <ProductGrid onProductClick={() => {}} />
+              </View>
+              <Footer />
+            </View>
+          </ScrollView>
+        </>
       )}
-      <main style={{ padding: "20px" }}>
-        <h2>Bienvenido a la página principal</h2>
-      </main>
     </>
   );
 }

@@ -102,9 +102,16 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
   return (
     <>
       <View style={styles.topBar}>
-        <a href="/welcome" style={styles.logoLink}>
-          <img src="https://i.imgur.com/6k1EXFk.png" alt="KCL Trading Logo" style={styles.logoImage} />
-        </a>
+        {Platform.OS === "web" ? (
+  <a href="/welcome" style={styles.logoLink}>
+    <img src="https://i.imgur.com/6k1EXFk.png" alt="KCL Trading Logo" style={styles.logoImage} />
+  </a>
+) : (
+  <TouchableOpacity onPress={() => router.push("/welcome")}>
+    <Text style={{ fontWeight: "bold", fontSize: 18 }}>KCL Trading</Text>
+  </TouchableOpacity>
+)}
+
 
         <View style={styles.searchSection}>
           {Platform.OS === "web" ? (
@@ -177,7 +184,7 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
           <TouchableOpacity style={styles.linkButton} onPress={onLoginPress}>
             <Text style={styles.linkText}>Regístrate | Inicia sesión</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sellButton}>
+          <TouchableOpacity style={styles.sellButton} onPress={onLoginPress}>
             <Text style={styles.sellText}>Vender ahora</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.helpIcon}>

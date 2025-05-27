@@ -1,3 +1,5 @@
+// api/api.js
+
 import axios from "axios";
 
 const API_URL = "http://192.168.1.38:5000/api"; // Cambia esto si usas un móvil físico
@@ -50,8 +52,7 @@ export const getUserProfile = async (token) => {
   }
 };
 
-
-export const updateUser = async (token, userData) => {
+export const updateUser = async (token, username, email, location, bio, avatar_url) => {
   try {
     const response = await axios.put(
       `${API_BASE_URL}/users/update`,
@@ -105,4 +106,15 @@ export async function loginWithGoogle(accessToken) {
     throw err;
   }
 };
+
+export const getCountries = async () => {
+  try {
+    const response = await fetch("http://192.168.1.227:5000/api/users/countries");
+    return await response.json();
+  } catch (err) {
+    console.error("Error al obtener países:", err);
+    return [];
+  }
+};
+
 

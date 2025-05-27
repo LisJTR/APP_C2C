@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function EmailVerification({ email }: { email: string }) {
   const [code, setCode] = useState("");
@@ -19,8 +20,23 @@ export default function EmailVerification({ email }: { email: string }) {
       const data = await res.json();
   
       if (res.ok) {
-        router.replace("/(webfrontend)"); // Redirige al layout principal
-      } else {
+  // 🧠 Guardar token en sessionStorage
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem("token", data.token);
+  }
+
+  // ✅ Actualizar Zustand con login
+  const login = useAuthStore.getState().login;
+  login(data.token, {
+    id: data.user.id,
+    username: data.user.username,
+    email: data.user.email,
+  });
+
+  // ✅ Redirigir
+  router.replace("/");
+}
+ else {
         alert(data.message || "Código incorrecto");
       }
     } catch (err) {
