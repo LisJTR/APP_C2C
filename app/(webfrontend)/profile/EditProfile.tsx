@@ -33,6 +33,7 @@ export default function EditProfile() {
   });
 
   const [countries, setCountries] = useState<{ id: number; name: string }[]>([]);
+  const [cities, setCities] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -58,6 +59,26 @@ export default function EditProfile() {
 
     fetchCountries();
   }, [user]);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      if (!form.country_id) {
+        setCities([]);
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/users/cities/${form.country_id}`);
+        const data = await res.json();
+        setCities(data);
+      } catch (err) {
+        console.error("Error al obtener ciudades:", err);
+        setCities([]);
+      }
+    };
+
+    fetchCities();
+  }, [form.country_id]);
 
   const pickImage = async () => {
     if (Platform.OS === "web") {
@@ -93,99 +114,139 @@ export default function EditProfile() {
   };
 
   const handleUpdate = async () => {
-    if (!token || !user || !user.id) return;
+    if (!token || !user || !user.id) {
+  console.warn("⛔ Token o user.id no definido");
+  return;
+}
 
-    const res = await updateUser(token, {
-      username: form.username,
-      email: form.email,
-      location: form.location,
-      bio: form.bio,
-      avatar_url: form.avatar_url,
-      country_id: form.country_id,
-    });
-
-    if (res?.user) {
-      setUser(res.user);
-      router.push("/(webfrontend)/profile");
+    try {
+       console.log("🛡️ TOKEN QUE SE ENVÍA:", token);
+      const res = await updateUser(token, form);
+      if (res?.user) {
+        setUser(res.user);
+        router.push("/(webfrontend)/profile");
+      }
+    } catch (err) {
+      console.error("❌ Error al actualizar perfil:", err);
     }
   };
 
   return (
     <ScrollView style={styles.page}>
       <HeaderLoggedIn onSearch={() => {}} />
-      <View style={styles.content}>
-        <Text style={styles.title}>Ajustes</Text>
-
-        <View style={styles.card}>
-          <View style={styles.photoSection}>
-            <Text style={styles.label}>Tu foto</Text>
-            <Image source={{ uri: form.avatar_url }} style={styles.avatar} />
-            <TouchableOpacity onPress={pickImage}>
-              <Text style={{ color: "#007AFF", marginTop: 8 }}>Elegir foto</Text>
+      <View style={styles.container}>
+        <View style={styles.sidebar}>
+          <Text style={styles.sidebarTitle}>Ajustes</Text>
+          {[
+            "Datos de perfil",
+            "Ajustes de cuenta",
+            "Envíos",
+            "Pagos",
+            "Descuento por lote",
+            "Notificaciones",
+            "Ajustes de privacidad",
+            "Seguridad",
+          ].map((item, index) => (
+            <TouchableOpacity key={index} style={styles.sidebarItem}>
+              <Text style={styles.sidebarItemText}>{item}</Text>
             </TouchableOpacity>
-          </View>
+          ))}
+        </View>
 
-          <View style={styles.section}>
-            <Text style={styles.label}>Sobre mí</Text>
-            <TextInput
-              style={styles.input}
-              value={form.bio}
-              onChangeText={(text) => setForm((prev) => ({ ...prev, bio: text }))}
-              placeholder="Cuéntanos más sobre ti"
-              multiline
-              numberOfLines={3}
-            />
-          </View>
+        <View style={styles.mainContent}>
+          <Text style={styles.title}>Ajustes</Text>
+          <View style={styles.card}>
+            <View style={styles.photoSection}>
+              <Text style={styles.label}>Tu foto</Text>
+              <Image
+                source={{ uri: form.avatar_url?.startsWith("http") ? form.avatar_url : "https://i.imgur.com/KoJ8KNe.png" }}
+                style={styles.avatar}
+              />
+              <TouchableOpacity onPress={pickImage}>
+                <Text style={{ color: "#007AFF", marginTop: 8 }}>Elegir foto</Text>
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.section}>
-            <Text style={styles.label}>País</Text>
-            {Platform.OS === "web" ? (
-              <select
-                value={form.country_id}
-                onChange={(e) => setForm((prev) => ({ ...prev, country_id: e.target.value }))}
-                style={styles.input as any}
-              >
-                <option value="">Selecciona un país</option>
-                {countries.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
+            <View style={styles.section}>
+              <Text style={styles.label}>Sobre mí</Text>
               <TextInput
                 style={styles.input}
-                value={countries.find((c) => c.id.toString() === form.country_id)?.name || ""}
-                editable={false}
-                placeholder="Solo editable en web"
+                value={form.bio}
+                onChangeText={(text) => setForm((prev) => ({ ...prev, bio: text }))}
+                placeholder="Cuéntanos más sobre ti"
+                multiline
+                numberOfLines={3}
               />
-            )}
-          </View>
+            </View>
 
-          <View style={styles.section}>
-            <Text style={styles.label}>Ciudad</Text>
-            <TextInput
-              style={styles.input}
-              value={form.location}
-              onChangeText={(text) => setForm((prev) => ({ ...prev, location: text }))}
-              placeholder="Ciudad"
-            />
-          </View>
+            <View style={styles.section}>
+              <Text style={styles.label}>País</Text>
+              {Platform.OS === "web" ? (
+                <select
+                  value={form.country_id}
+                  onChange={(e) => setForm((prev) => ({ ...prev, country_id: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    border: "1px solid #e5e7eb",
+                    backgroundColor: "#f9fafb",
+                    fontSize: 14,
+                    color: "#111827",
+                  }}
+                >
+                  <option value="">Selecciona un país</option>
+                  {countries.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <TextInput
+                  style={styles.input}
+                  value={countries.find((c) => c.id.toString() === form.country_id)?.name || ""}
+                  editable={false}
+                  placeholder="Solo editable en web"
+                />
+              )}
+            </View>
 
-          <View style={styles.section}>
-            <Text style={styles.label}>Correo electrónico</Text>
-            <TextInput
-              style={styles.input}
-              value={form.email}
-              onChangeText={(text) => setForm((prev) => ({ ...prev, email: text }))}
-              placeholder="Correo"
-              keyboardType="email-address"
-            />
-          </View>
+            <View style={styles.section}>
+              <Text style={styles.label}>Ciudad</Text>
+              {Platform.OS === "web" ? (
+                <select
+                  value={form.location}
+                  onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    border: "1px solid #e5e7eb",
+                    backgroundColor: "#f9fafb",
+                    fontSize: 14,
+                    color: "#111827",
+                  }}
+                >
+                  <option value="">Selecciona una ciudad</option>
+                  {cities.map((city) => (
+                    <option key={city.id} value={city.name}>{city.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <TextInput
+                  style={styles.input}
+                  value={form.location}
+                  onChangeText={(text) => setForm((prev) => ({ ...prev, location: text }))}
+                  placeholder="Ciudad"
+                />
+              )}
+            </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-            <Text style={styles.buttonText}>Actualizar perfil</Text>
-          </TouchableOpacity>
+            <View style={{ alignItems: "flex-end", marginTop: 16 }}>
+              <TouchableOpacity style={styles.buttonSmall} onPress={handleUpdate}>
+                <Text style={styles.buttonText}>Actualizar perfil</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </View>
       <Footer />
@@ -195,63 +256,19 @@ export default function EditProfile() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#fff" },
-  content: { padding: 24 },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 24,
-    color: "#111827",
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
-  },
-  photoSection: {
-    alignItems: "center",
-    marginBottom: 28,
-  },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    marginTop: 10,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    backgroundColor: "#f9fafb",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    fontSize: 14,
-    color: "#111827",
-    width: "100%",
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 24,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
-  },
+  container: { flexDirection: "row", backgroundColor: "#fff", paddingHorizontal: 32, paddingTop: 32, paddingBottom: 60 },
+  sidebar: { width: 240, paddingRight: 24, borderRightWidth: 1, borderColor: "#e5e7eb" },
+  sidebarTitle: { fontSize: 18, fontWeight: "600", marginBottom: 16 },
+  sidebarItem: { paddingVertical: 10 },
+  sidebarItemText: { fontSize: 15, color: "#374151" },
+  mainContent: { flex: 1, paddingLeft: 32 },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 24, color: "#111827" },
+  card: { backgroundColor: "#fff", borderRadius: 12, padding: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 12, elevation: 2 },
+  photoSection: { alignItems: "center", marginBottom: 28 },
+  avatar: { width: 90, height: 90, borderRadius: 45, marginTop: 10 },
+  section: { marginBottom: 20 },
+  label: { fontSize: 14, fontWeight: "600", color: "#374151", marginBottom: 8 },
+  input: { borderWidth: 1, borderColor: "#e5e7eb", backgroundColor: "#f9fafb", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8, fontSize: 14, color: "#111827", width: "100%" },
+  buttonSmall: { backgroundColor: "#007AFF", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 6 },
+  buttonText: { color: "#fff", fontWeight: "600", fontSize: 14 },
 });

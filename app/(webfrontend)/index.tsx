@@ -7,12 +7,18 @@ import BoddyLoggin from "../(webfrontend)/components/BoddyLoggin";
 import ProductGrid from "../../components/web/products/ProductGrid";
 import Footer from "../../components/web/Footer";
 import { ScrollView, View } from "react-native";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Index() {
+  const { loadUser } = useAuthStore();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [logged, setLogged] = useState(false);
 
+  useEffect(() => {
+    loadUser(); // <-- Llamas al cargar
+  }, []);
+  
   useEffect(() => {
     const checkSession = async () => {
       const loggedIn = await isLoggedIn();

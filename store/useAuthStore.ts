@@ -47,20 +47,30 @@ export const useAuthStore = create<AuthState>()(
 
       // 📌 Cargar sesión
       loadUser: async () => {
-        try {
-          const token = await AsyncStorage.getItem("token");
-          const userData = await AsyncStorage.getItem("user");
+  try {
+    let token: string | null = null;
+    let userData: string | null = null;
 
-          if (token && userData) {
-            const parsedUser: User | null = JSON.parse(userData);
-            if (parsedUser) {
-              set({ token, user: parsedUser });
-            }
-          }
-        } catch (error) {
-          console.error("Error cargando usuario:", error);
-        }
-      },
+    if (typeof window !== "undefined") {
+      // Web
+      token = sessionStorage.getItem("token");
+      userData = sessionStorage.getItem("user");
+    } else {
+      // Mobile
+      token = await AsyncStorage.getItem("token");
+      userData = await AsyncStorage.getItem("user");
+    }
+
+    if (token && userData) {
+      const parsedUser: User | null = JSON.parse(userData);
+      if (parsedUser) {
+        set({ token, user: parsedUser });
+      }
+    }
+  } catch (error) {
+    console.error("Error cargando usuario:", error);
+  }
+},
 
       // 📌 Actualizar usuario
       updateUser: async (newUser) => {
