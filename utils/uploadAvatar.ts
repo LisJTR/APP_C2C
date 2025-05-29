@@ -1,41 +1,42 @@
-import { supabase } from "./supabaseClient";
+import axios from "axios";
+import { API_BASE_URL, STATIC_HOST } from "./config";
+import { useAuthStore } from "@/store/useAuthStore";
 
+/**
+ * Sube una imagen de avatar al backend y devuelve la URL pública.
+ * Solo se usa en versión web.
+ */
 export async function uploadAvatar(file: File, userId: string): Promise<string | null> {
   try {
-    const session = await supabase.auth.getSession();
-    const currentUser = session.data.session?.user;
-
-    if (!currentUser) {
-      console.warn("⚠️ No hay sesión activa en Supabase.");
+    const token = useAuthStore.getState().token;
+    if (!token || !userId) {
+      console.warn("⚠️ No hay usuario autenticado");
       return null;
     }
 
-    if (currentUser.id !== userId) {
-      console.warn("⚠️ El ID del usuario no coincide con la sesión.");
-      return null;
-    }
+    const formData = new FormData();
+    formData.append("image", file, `avatar-${Date.now()}.jpg`);
 
-    const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const fileName = `${userId}.${fileExt}`;
-    const filePath = `public/${fileName}`;
-    const contentType = file.type || "image/jpeg";
+    // ✅ POST al backend para subir la imagen
+    const uploadResponse = await axios.post(
+      `${API_BASE_URL}/upload`, // ✅ ya no duplica /api
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(filePath, file, {
-        contentType,
-        upsert: true,
-      });
+    // ✅ URL relativa como "/uploads/archivo.jpg"
+    const relativeUrl = uploadResponse.data.imageUrl;
 
-    if (uploadError) {
-      console.error("❌ Error al subir avatar:", uploadError.message);
-      return null;
-    }
-
-    const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-    return data?.publicUrl || null;
-  } catch (err) {
-    console.error("❌ Error inesperado al subir avatar:", err);
+    // ✅ Convertir a URL completa usando STATIC_HOST
+    const fullUrl = `${STATIC_HOST}${relativeUrl}`;
+    return fullUrl;
+  } catch (error) {
+    console.error("❌ Error al subir avatar desde web:", error);
     return null;
   }
 }

@@ -153,6 +153,18 @@ router.get("/:id/products", async (req, res) => {
     res.status(500).json({ error: "Error al obtener productos del usuario" });
   }
 });
-
-
+// Obtener ciudades por país
+router.get("/cities/:countryId", async (req, res) => {
+  const { countryId } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT id, name FROM cities WHERE country_id = $1 ORDER BY name ASC",
+      [countryId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error al obtener ciudades:", error);
+    res.status(500).json({ message: "Error al obtener ciudades" });
+  }
+});
 export default router;

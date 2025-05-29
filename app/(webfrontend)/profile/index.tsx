@@ -1,5 +1,3 @@
-// app/(webfrontend)/profile/index.tsx
-
 import { useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
 import HeaderLoggedIn from "../components/HeaderLoggedIn";
@@ -34,7 +32,7 @@ export default function ProfilePage() {
       <View style={styles.container}>
         <View style={styles.topSection}>
           <Image
-            source={{ uri: user?.avatar_url || "https://i.imgur.com/k7J3tLw.png" }}
+            source={{ uri: user?.avatar_url || "https://i.imgur.com/KoJ8KNe.png" }}
             style={styles.avatar}
           />
           <View>
@@ -47,6 +45,12 @@ export default function ProfilePage() {
             <Text style={styles.editText}>Editar perfil</Text>
           </TouchableOpacity>
         </View>
+
+        {user?.bio ? (
+          <View style={styles.bioSection}>
+            <Text style={styles.bioText}>{user.bio}</Text>
+          </View>
+        ) : null}
 
         <View style={styles.infoSection}>
           <View style={styles.column}>
@@ -101,6 +105,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   editText: { fontWeight: "500" },
+  bioSection: { marginTop: 16 },
+  bioText: { fontSize: 15, color: "#333" },
   infoSection: {
     marginTop: 20,
     flexDirection: "row",
