@@ -39,6 +39,9 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
   const [searchTerm, setSearchTerm] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [profileOpen, setProfileOpen] = useState(false);
+   const handleUploadPress = () => {
+    router.push("/(webfrontend)/uploadProduct/UploadProducts");
+  };
 
   useEffect(() => {
     if (pathname.startsWith("/members")) setSelected("members");
@@ -191,7 +194,9 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
             )}
           </div>
 
-          <TouchableOpacity style={styles.sellButton}><Text style={styles.sellText}>Vender ahora</Text></TouchableOpacity>
+<TouchableOpacity style={styles.sellButton} onPress={handleUploadPress}>
+  <Text style={styles.sellText}>Vender ahora</Text>
+</TouchableOpacity>
           <TouchableOpacity style={styles.helpIcon}><HelpCircle size={20} color="#444" /></TouchableOpacity>
           <LanguageSelector />
         </View>

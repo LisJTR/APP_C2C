@@ -105,4 +105,35 @@ router.get("/products/:id", async (req, res) => {
   }
 });
 
+// POST /api/products - subir nuevo producto
+router.post("/products", async (req, res) => {
+  const { user_id, title, description, price, category, images } = req.body;
+
+  if (!user_id || !title || !description || !price || !category || !images?.length) {
+    return res.status(400).json({ error: "Todos los campos son obligatorios" });
+  }
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO products (user_id, title, description, price, category)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [user_id, title, description, price, category]
+    );
+
+    const productId = result.rows[0].id;
+
+    for (const imageUrl of images) {
+      await pool.query(
+        `INSERT INTO product_images (product_id, image_url) VALUES ($1, $2)`,
+        [productId, imageUrl]
+      );
+    }
+
+    res.status(201).json({ message: "Producto subido con éxito", product: result.rows[0] });
+  } catch (error) {
+    console.error("❌ Error al subir producto:", error);
+    res.status(500).json({ error: "Error interno al subir producto" });
+  }
+});
+
 export default router;

@@ -54,6 +54,7 @@ export default function EditProfile() {
         setCountries(data);
       } catch (err) {
         console.error("Error al obtener países:", err);
+        setCountries([]);
       }
     };
 

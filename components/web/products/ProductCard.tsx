@@ -18,10 +18,14 @@ export default function ProductCard({
   product: Product;
   onClick: () => void;
 }) {
-  const fallbackImage = "https://i.imgur.com/OZCOCYs.jpeg";
+  const fallbackImage = "https://i.imgur.com/rNFxAm9.png";
+   const BASE_URL = "http://localhost:5000"; // cambia en producción
+
   const imageSrc =
     product.image_url && product.image_url.trim() !== ""
-      ? product.image_url
+      ? product.image_url.startsWith("http")
+        ? product.image_url
+        : `${BASE_URL}${product.image_url}`
       : fallbackImage;
 
   return (
