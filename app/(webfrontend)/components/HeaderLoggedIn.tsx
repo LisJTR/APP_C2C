@@ -21,6 +21,7 @@ import LanguageSelector from "../../../components/web/LanguageSelector";
 import { usePathname, useRouter } from "expo-router";
 import { Platform as RNPlatform } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const MENU_OPTIONS = [
   { id: "articles", label: "Artículos" },
@@ -42,6 +43,7 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
    const handleUploadPress = () => {
     router.push("/(webfrontend)/uploadProduct/UploadProducts");
   };
+const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
     if (pathname.startsWith("/members")) setSelected("members");
@@ -49,13 +51,14 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
   }, [pathname]);
 
   const handleLogout = async () => {
-    if (RNPlatform.OS === "web") {
-      sessionStorage.removeItem("token");
-    } else {
-      await SecureStore.deleteItemAsync("token");
-    }
-    router.replace("/welcome");
-  };
+  await logout();
+
+  if (RNPlatform.OS === "web") {
+    router.replace("/welcome"); // redirige a la pantalla de inicio web
+  } else {
+    router.replace("/home"); // o la ruta que uses en móvil
+  }
+};
 
   const fetchSuggestions = async (text: string) => {
     if (!text.trim()) return setSearchSuggestions([]);

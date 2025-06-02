@@ -20,7 +20,7 @@ import { useGoogleAuth, useFacebookAuth } from "@/hooks/auth/useSocialAuth";
 import { useAuthStore } from "@/store/useAuthStore";
 
 // Función API para login con Google (en backend)
-import { loginWithGoogle } from "@/api/api";
+//import { loginWithGoogle } from "@/api/api";
 
 // Componente principal: Modal de autenticación para la versión web
 export default function AuthModalWeb({
