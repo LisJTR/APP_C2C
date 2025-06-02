@@ -101,8 +101,6 @@ router.get("/products/:id", async (req, res) => {
     res.status(500).json({ error: "Error interno al obtener producto" });
   }
 });
-
-
 // POST: crear producto con varias imágenes
 router.post("/products", async (req, res) => {
   const { user_id, title, description, price, category, size, condition, brand, images } = req.body;
@@ -134,5 +132,4 @@ router.post("/products", async (req, res) => {
     res.status(500).json({ error: "Error al crear producto" });
   }
 });
-
 export default router;

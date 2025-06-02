@@ -1,3 +1,4 @@
+// backend/controllers/userRoutes.js
 import express from "express";
 import { body, validationResult } from "express-validator";
 import pool from "../config/db.js";

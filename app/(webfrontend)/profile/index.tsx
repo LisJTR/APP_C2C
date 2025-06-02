@@ -1,5 +1,4 @@
-//app/(webfrontend)/profile/index.tsx
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
 import HeaderLoggedIn from "../components/HeaderLoggedIn";
 import Footer from "@/components/Bridges/HeadersWeb/Footer";
@@ -8,11 +7,23 @@ import { getUserProfile } from "@/api/api";
 import { CheckCircle, MapPin, Clock, Users, Mail, ShieldCheck, Globe } from "lucide-react";
 import { useRouter } from "expo-router";
 
+type Product = {
+  id: number;
+  title: string;
+  price: number;
+  image_url: string;
+};
+
 export default function ProfilePage() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const token = useAuthStore((state) => state.token);
   const router = useRouter();
+  const [myProducts, setMyProducts] = useState<Product[]>([]);
+
+  const handleUploadPress = () => {
+    router.push("/(webfrontend)/uploadProduct/UploadProducts");
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -25,6 +36,21 @@ export default function ProfilePage() {
     };
     fetchUser();
   }, [token, setUser]);
+
+  useEffect(() => {
+    const fetchUserProducts = async () => {
+      if (user?.id) {
+        try {
+          const res = await fetch(`http://localhost:5000/api/users/${user.id}/products`);
+          const data = await res.json();
+          setMyProducts(data);
+        } catch (error) {
+          console.error("Error al obtener productos del usuario:", error);
+        }
+      }
+    };
+    fetchUserProducts();
+  }, [user]);
 
   return (
     <ScrollView style={styles.page}>
@@ -78,13 +104,48 @@ export default function ProfilePage() {
           <Text style={styles.badge}>Empieza una nueva racha de anuncios</Text>
           <Text style={styles.tip}>Sube 5 artículos en 30 días para ganar la insignia de vendedor frecuente</Text>
 
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>Sube artículos para empezar a vender</Text>
-            <Text style={styles.emptyText}>Vende lo que ya no usas. ¡Es fácil y seguro!</Text>
-            <TouchableOpacity style={styles.uploadButton}>
-              <Text style={{ color: "#fff" }}>Subir ahora</Text>
-            </TouchableOpacity>
-          </View>
+          {myProducts.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>Sube artículos para empezar a vender</Text>
+              <Text style={styles.emptyText}>Vende lo que ya no usas. ¡Es fácil y seguro!</Text>
+              <TouchableOpacity style={styles.uploadButton} onPress={handleUploadPress}>
+                <Text style={{ color: "#fff" }}>Subir ahora</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={{ marginTop: 24, flexDirection: "row", flexWrap: "wrap", gap: 16 }}>
+              {myProducts.map((product) => (
+                <View
+                  key={product.id}
+                  style={{
+                    width: 150,
+                    backgroundColor: "#fff",
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    shadowColor: "#000",
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <Image
+                    source={{
+                      uri: product.image_url.startsWith("http")
+                        ? product.image_url
+                        : `http://localhost:5000${product.image_url}`,
+                    }}
+                    style={{ width: "100%", height: 150 }}
+                  />
+                  <View style={{ padding: 8 }}>
+                    <Text style={{ fontWeight: "600" }}>{product.title}</Text>
+                    <Text style={{ color: "#007AFF", marginTop: 4 }}>
+                      {Number(product.price).toFixed(2)} €
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </View>
 

@@ -1,13 +1,15 @@
-import React, { useRef } from "react";
+import React from "react";
+import { useRouter } from "expo-router";
 
 type HeroSectionProps = {
   onLoginPress: () => void;
 };
 
 export default function HeroSection({ onLoginPress }: HeroSectionProps) {
-  const handleScroll = () => {
-    const grid = document.getElementById("products-section");
-    if (grid) grid.scrollIntoView({ behavior: "smooth" });
+  const router = useRouter();
+
+  const handleUploadPress = () => {
+    router.push("/(webfrontend)/uploadProduct/UploadProducts");
   };
 
   return (
@@ -20,19 +22,19 @@ export default function HeroSection({ onLoginPress }: HeroSectionProps) {
       <div style={styles.heroOverlay}>
         <div style={styles.heroContent}>
           <h1 style={styles.heroTitle}>Sube tus artículos con confianza</h1>
-  
-          <button style={styles.heroButton} onClick={onLoginPress}>
+
+          <button style={styles.heroButton} onClick={handleUploadPress}>
             Vender ahora
           </button>
         </div>
       </div>
-  
-      {/* 🔽 AÑADE ESTE BLOQUE AQUÍ DEBAJO */}
+
+      {/* 🔽 Sección de novedades */}
       <div style={styles.sectionBelow}>
         <h2 style={styles.sectionTitle}>Novedades</h2>
       </div>
     </div>
-  );  
+  );
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
@@ -51,7 +53,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: 20,
     marginLeft: 280,
     objectFit: "cover",
-    //zIndex: 0,
   },
   heroOverlay: {
     position: "relative",
@@ -62,7 +63,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     paddingLeft: "6%",
     paddingRight: "6%",
     marginTop: 200,
-    //zIndex: 1,
   },
   heroContent: {
     fontFamily: "Inter, sans-serif",
@@ -102,17 +102,16 @@ const styles: { [key: string]: React.CSSProperties } = {
   sectionBelow: {
     width: "100%",
     textAlign: "center",
-    paddingTop:15,
+    paddingTop: 15,
     marginLeft: -550,
     marginTop: -400,
     backgroundColor: "#fff",
   },
-  
   sectionTitle: {
     fontSize: 24,
     fontWeight: 600,
     color: "#111",
     fontFamily: "Inter, sans-serif",
     marginBottom: 10,
-  },  
+  },
 };
