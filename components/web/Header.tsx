@@ -1,3 +1,5 @@
+// components/web/Header.tsx
+
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -12,6 +14,7 @@ import LanguageSelector from "./LanguageSelector";
 import "./LanguageSelector.css";
 import { usePathname, useRouter } from "expo-router";
 
+// Opciones de menú desplegable para filtrar la búsqueda
 const MENU_OPTIONS = [
   { id: "articles", label: "Artículos" },
   { id: "members", label: "Miembros" },
@@ -19,36 +22,42 @@ const MENU_OPTIONS = [
 ];
 
 type HeaderProps = {
-  onLoginPress: () => void;
-  onSearch: (query: string) => void;
+  onLoginPress: () => void;       // Acción al presionar "Login"
+  onSearch: (query: string) => void; // Función de búsqueda global
 };
 
+/**
+ * Header: barra superior del sitio web
+ * - Incluye logo, selector de categoría, barra de búsqueda, login y navegación.
+ * - Adaptado tanto para web como para móvil mediante `Platform.OS`.
+ */
 export default function Header({ onLoginPress, onSearch }: HeaderProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState("articles");
-  const ref = useRef<HTMLDivElement>(null);
-  const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const pathname = usePathname();  // Ruta actual
+  const router = useRouter();      // Navegación
 
+  const [open, setOpen] = useState(false);             // Control de menú desplegable
+  const [selected, setSelected] = useState("articles"); // Categoría seleccionada
+  const [searchTerm, setSearchTerm] = useState("");     // Texto de búsqueda
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]); // Autocompletado
+  const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 }); // Posición del menú
+
+  const ref = useRef<HTMLDivElement>(null); // Referencia para el menú desplegable
+
+  // Cambia la categoría en función de la ruta
   useEffect(() => {
-    if (pathname.startsWith("/members")) {
-      setSelected("members");
-    } else if (pathname.startsWith("/search")) {
-      setSelected("articles");
-    }
+    if (pathname.startsWith("/members")) setSelected("members");
+    else if (pathname.startsWith("/search")) setSelected("articles");
   }, [pathname]);
 
+  // Obtiene sugerencias dinámicas según el texto y la categoría
   const fetchSuggestions = async (text: string) => {
     if (!text.trim()) return setSearchSuggestions([]);
-  
+
     const endpoint =
       selected === "members"
         ? `http://localhost:5000/api/users/suggestions?query=${encodeURIComponent(text)}`
         : `http://localhost:5000/api/products/suggestions?query=${encodeURIComponent(text)}`;
-  
+
     try {
       const res = await fetch(endpoint);
       const data = await res.json();
@@ -57,8 +66,8 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
       console.error("Error obteniendo sugerencias", err);
     }
   };
-  
 
+  // Acción al hacer clic en una sugerencia
   const handleSuggestionClick = (value: string) => {
     setSearchTerm(value);
     setSearchSuggestions([]);
@@ -66,18 +75,20 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
     router.push({
       pathname: selected === "members" ? "/members/[query]" : "/search/[query]",
       params: { query: value },
-    });    
+    });
   };
 
+  // Acción al enviar el formulario
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSearch(searchTerm);
     router.push({
       pathname: selected === "members" ? "/members/[query]" : "/search/[query]",
       params: { query: searchTerm },
-    });    
+    });
   };
 
+  // Cierra el menú si se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -86,6 +97,7 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Alterna el menú y guarda coordenadas
   const toggleMenu = () => {
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect();
@@ -94,6 +106,7 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
     setOpen(!open);
   };
 
+  // Cambia la categoría seleccionada
   const handleSelect = (id: string) => {
     setSelected(id);
     setOpen(false);
@@ -101,18 +114,20 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
 
   return (
     <>
+      {/* Barra superior */}
       <View style={styles.topBar}>
+        {/* Logo redirige a /welcome */}
         {Platform.OS === "web" ? (
-  <a href="/welcome" style={styles.logoLink}>
-    <img src="https://i.imgur.com/6k1EXFk.png" alt="KCL Trading Logo" style={styles.logoImage} />
-  </a>
-) : (
-  <TouchableOpacity onPress={() => router.push("/welcome")}>
-    <Text style={{ fontWeight: "bold", fontSize: 18 }}>KCL Trading</Text>
-  </TouchableOpacity>
-)}
+          <a href="/welcome" style={styles.logoLink}>
+            <img src="https://i.imgur.com/6k1EXFk.png" alt="KCL Trading Logo" style={styles.logoImage} />
+          </a>
+        ) : (
+          <TouchableOpacity onPress={() => router.push("/welcome")}>
+            <Text style={{ fontWeight: "bold", fontSize: 18 }}>KCL Trading</Text>
+          </TouchableOpacity>
+        )}
 
-
+        {/* Sección de búsqueda + categoría */}
         <View style={styles.searchSection}>
           {Platform.OS === "web" ? (
             <div className="lang-selector" ref={ref}>
@@ -150,6 +165,7 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
             </View>
           )}
 
+          {/* Formulario de búsqueda */}
           <form onSubmit={handleSearch} style={styles.searchContainer}>
             <Search size={18} color="#888" style={{ marginLeft: 8 }} />
             <TextInput
@@ -165,21 +181,23 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
             />
           </form>
 
+          {/* Sugerencias desplegables */}
           {searchSuggestions.length > 0 && (
             <div className="suggestions-box">
-            {searchSuggestions.map((s, i) => (
-              <div
-                key={i}
-                className="suggestion-item"
-                onClick={() => handleSuggestionClick(s)}
-              >
-                {s}
-              </div>
-            ))}
-          </div>          
+              {searchSuggestions.map((s, i) => (
+                <div
+                  key={i}
+                  className="suggestion-item"
+                  onClick={() => handleSuggestionClick(s)}
+                >
+                  {s}
+                </div>
+              ))}
+            </div>
           )}
         </View>
 
+        {/* Botones de acción a la derecha */}
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.linkButton} onPress={onLoginPress}>
             <Text style={styles.linkText}>Regístrate | Inicia sesión</Text>
@@ -194,6 +212,7 @@ export default function Header({ onLoginPress, onSearch }: HeaderProps) {
         </View>
       </View>
 
+      {/* Barra de navegación inferior */}
       <View style={styles.navBar}>
         {[
           "Mujer",

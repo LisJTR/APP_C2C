@@ -1,4 +1,3 @@
-// backend/controllers/userRoutes.js
 import express from "express";
 import { body, validationResult } from "express-validator";
 import pool from "../config/db.js";
@@ -11,6 +10,63 @@ const validateUpdate = [
   body("email").optional().isEmail().withMessage("Debe proporcionar un email válido"),
 ];
 
+// ✅ Rutas específicas primero
+router.get("/countries", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, name FROM countries ORDER BY name ASC");
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error al obtener países:", error);
+    res.status(500).json({ message: "Error al obtener países" });
+  }
+});
+
+router.get("/cities/:countryId", async (req, res) => {
+  const { countryId } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT id, name FROM cities WHERE country_id = $1 ORDER BY name ASC",
+      [countryId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error al obtener ciudades:", error);
+    res.status(500).json({ message: "Error al obtener ciudades" });
+  }
+});
+
+// ✅ Luego rutas como /search o /suggestions
+router.get("/search", async (req, res) => {
+  const { query } = req.query;
+  try {
+    const result = await pool.query(
+      `SELECT id, username, email FROM users 
+       WHERE is_verified = true AND username ILIKE $1`,
+      [`%${query}%`]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error al buscar usuarios:", err);
+    res.status(500).json({ error: "Error del servidor" });
+  }
+});
+
+router.get("/suggestions", async (req, res) => {
+  const query = req.query.query?.toLowerCase();
+  if (!query) return res.json([]);
+  try {
+    const result = await pool.query(
+      `SELECT username FROM users WHERE LOWER(username) LIKE $1 AND is_verified = true LIMIT 5`,
+      [`%${query}%`]
+    );
+    res.json(result.rows.map(r => r.username));
+  } catch (err) {
+    console.error("Error al obtener sugerencias:", err);
+    res.status(500).json({ error: "Error del servidor" });
+  }
+});
+
+// ✅ Luego rutas protegidas
 router.get("/profile", authMiddleware, async (req, res) => {
   try {
     const user = await pool.query(
@@ -22,11 +78,9 @@ router.get("/profile", authMiddleware, async (req, res) => {
        WHERE u.id = $1`,
       [req.user.id]
     );
-
     if (user.rows.length === 0) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
-
     res.json({ message: "Perfil obtenido con éxito", user: user.rows[0] });
   } catch (error) {
     console.error("Error en la ruta de perfil:", error);
@@ -41,7 +95,6 @@ router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
   }
 
   const { username, email, location, bio, avatar_url, country_id } = req.body;
-
   try {
     const userExists = await pool.query("SELECT * FROM users WHERE id = $1", [req.user.id]);
     if (userExists.rows.length === 0) {
@@ -77,7 +130,6 @@ router.delete("/delete", authMiddleware, async (req, res) => {
     if (userExists.rows.length === 0) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
-
     await pool.query("DELETE FROM users WHERE id = $1", [req.user.id]);
     res.json({ message: "Usuario eliminado correctamente" });
   } catch (error) {
@@ -86,50 +138,31 @@ router.delete("/delete", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/search", async (req, res) => {
-  const { query } = req.query;
-
+// ✅ Finalmente, rutas dinámicas con :id
+router.get("/:id/products", async (req, res) => {
+  const { id } = req.params;
   try {
     const result = await pool.query(
-      `SELECT id, username, email FROM users 
-       WHERE is_verified = true AND username ILIKE $1`,
-      [`%${query}%`]
+      "SELECT p.*, pi.image_url FROM products p LEFT JOIN LATERAL (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY id ASC LIMIT 1) pi ON true WHERE user_id = $1",
+      [id]
     );
-
     res.json(result.rows);
-  } catch (err) {
-    console.error("Error al buscar usuarios:", err);
-    res.status(500).json({ error: "Error del servidor" });
+  } catch (error) {
+    console.error("❌ Error al obtener productos del usuario:", error);
+    res.status(500).json({ error: "Error al obtener productos del usuario" });
   }
 });
 
-router.get("/suggestions", async (req, res) => {
-  const query = req.query.query?.toLowerCase();
-  if (!query) return res.json([]);
-
-  try {
-    const result = await pool.query(
-      `SELECT username FROM users WHERE LOWER(username) LIKE $1 AND is_verified = true LIMIT 5`,
-      [`%${query}%`]
-    );
-
-    res.json(result.rows.map(r => r.username));
-  } catch (err) {
-    console.error("Error al obtener sugerencias:", err);
-    res.status(500).json({ error: "Error del servidor" });
-  }
-});
-// ✅ Ruta pública para obtener un usuario por ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query('SELECT id, username, email, location, bio, avatar_url FROM users WHERE id = $1',[id]);
-
-
+    const result = await pool.query(
+      'SELECT id, username, email, location, bio, avatar_url FROM users WHERE id = $1',
+      [id]
+    );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-
     res.json(result.rows[0]);
   } catch (error) {
     console.error('❌ Error al obtener usuario por ID:', error);
@@ -137,34 +170,4 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Obtener productos publicados por un usuario
-router.get("/:id/products", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const result = await pool.query(
-      "SELECT p.*, pi.image_url FROM products p LEFT JOIN LATERAL (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY id ASC LIMIT 1) pi ON true WHERE user_id = $1",
-      [id]
-    );
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error("❌ Error al obtener productos del usuario:", error);
-    res.status(500).json({ error: "Error al obtener productos del usuario" });
-  }
-});
-// Obtener ciudades por país
-router.get("/cities/:countryId", async (req, res) => {
-  const { countryId } = req.params;
-  try {
-    const result = await pool.query(
-      "SELECT id, name FROM cities WHERE country_id = $1 ORDER BY name ASC",
-      [countryId]
-    );
-    res.json(result.rows);
-  } catch (error) {
-    console.error("Error al obtener ciudades:", error);
-    res.status(500).json({ message: "Error al obtener ciudades" });
-  }
-});
 export default router;

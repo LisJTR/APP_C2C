@@ -1,40 +1,52 @@
 // components/web/ScreensModal/Register.tsx
-import React, { useState } from "react";
-import { X, Eye } from "lucide-react";
-import { animated, useSpring } from "react-spring";
-import { useRouter } from "expo-router";
-import { registerUser } from "@/api/api";
-import { FaSpinner } from "react-icons/fa";
 
+// ===================== IMPORTACIONES =====================
+import React, { useState } from "react"; // React y hooks para manejar estados
+import { X, Eye } from "lucide-react"; // Íconos usados en el modal
+import { animated, useSpring } from "react-spring"; // Animaciones suaves para el icono de visibilidad
+import { useRouter } from "expo-router"; // Navegación entre pantallas
+import { registerUser } from "@/api/api"; // Función para registrar un usuario (API propia)
+import { FaSpinner } from "react-icons/fa"; // Icono de carga (spinner)
 
+// ===================== COMPONENTE REGISTER =====================
+/**
+ * Componente de registro mostrado en un modal flotante.
+ * Permite al usuario registrarse mediante nombre de usuario, correo y contraseña.
+ */
 export default function RegisterScreen({
   onClose,
   onSuccess,
 }: {
-  onClose: () => void;
-  onSuccess: (email: string) => void;
+  onClose: () => void; // Cierre del modal
+  onSuccess: (email: string) => void; // Acción al completar el registro
 }) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [offers, setOffers] = useState(false);
-  const [terms, setTerms] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  // -------------------- ESTADOS DE FORMULARIO --------------------
+  const [showPassword, setShowPassword] = useState(false); // Mostrar/ocultar contraseña
+  const [offers, setOffers] = useState(false); // Checkbox: recibir ofertas
+  const [terms, setTerms] = useState(false); // Checkbox: aceptar términos
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga del botón
 
+  // Campos del formulario
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Errores de validación
   const [usernameError, setUsernameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [loading, setLoading] = useState(false);
 
+  const [loading, setLoading] = useState(false); // Carga al enviar
+
+  // -------------------- ANIMACIÓN DE ICONO DE CONTRASEÑA --------------------
   const eyeAnim = useSpring({
     transform: showPassword ? "scale(1.3)" : "scale(1)",
     config: { tension: 300, friction: 10 },
   });
 
-  const router = useRouter();
+  const router = useRouter(); // Navegación
 
+  // -------------------- VALIDACIONES --------------------
   const validateUsername = (value: string) => {
     setUsername(value);
     if (value.length < 4) {
@@ -66,6 +78,7 @@ export default function RegisterScreen({
     }
   };
 
+  // -------------------- VALIDACIÓN GLOBAL --------------------
   const isValid =
     terms &&
     username &&
@@ -75,6 +88,7 @@ export default function RegisterScreen({
     !emailError &&
     !passwordError;
 
+  // -------------------- ENVÍO DEL FORMULARIO --------------------
   const handleRegister = async () => {
     if (!isValid) return;
 
@@ -82,6 +96,7 @@ export default function RegisterScreen({
     try {
       const result = await registerUser(username, email, password);
       if (result.user) {
+        // Redirigir a pantalla de verificación de email
         router.replace(`/email-verification/${encodeURIComponent(email)}`);
         onClose();
       } else {
@@ -94,15 +109,18 @@ export default function RegisterScreen({
     }
   };
 
+  // ===================== RENDERIZADO =====================
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
+        {/* Cerrar modal */}
         <button style={styles.closeButton} onClick={onClose}>
           <X size={22} />
         </button>
 
         <h2 style={styles.title}>Regístrate</h2>
 
+        {/* Campo usuario */}
         <input
           style={styles.input}
           placeholder="Nombre de usuario"
@@ -111,6 +129,7 @@ export default function RegisterScreen({
         />
         {usernameError && <small style={styles.error}>{usernameError}</small>}
 
+        {/* Campo email */}
         <input
           style={styles.input}
           placeholder="Correo electrónico"
@@ -119,6 +138,7 @@ export default function RegisterScreen({
         />
         {emailError && <small style={styles.error}>{emailError}</small>}
 
+        {/* Campo contraseña con icono animado */}
         <div style={styles.passwordWrapper}>
           <input
             type={showPassword ? "text" : "password"}
@@ -138,6 +158,7 @@ export default function RegisterScreen({
         </div>
         {passwordError && <small style={styles.error}>{passwordError}</small>}
 
+        {/* Checkbox: ofertas */}
         <div style={styles.checkboxRow} onClick={() => setOffers(!offers)}>
           <input type="checkbox" checked={offers} readOnly />
           <span style={styles.checkboxLabel}>
@@ -145,6 +166,7 @@ export default function RegisterScreen({
           </span>
         </div>
 
+        {/* Checkbox: aceptar términos */}
         <div
           style={{ ...styles.checkboxRow, alignItems: "flex-start" }}
           onClick={() => setTerms(!terms)}
@@ -152,17 +174,12 @@ export default function RegisterScreen({
           <input type="checkbox" checked={terms} readOnly />
           <span style={styles.checkboxLabel}>
             Acepto los{" "}
-            <a href="#" style={styles.link}>
-              términos y condiciones
-            </a>{" "}
-            y la{" "}
-            <a href="#" style={styles.link}>
-              política de privacidad
-            </a>
-            .
+            <a href="#" style={styles.link}>términos y condiciones</a> y la{" "}
+            <a href="#" style={styles.link}>política de privacidad</a>.
           </span>
         </div>
 
+        {/* Botón de envío */}
         <button
           onClick={handleRegister}
           style={{
@@ -176,15 +193,19 @@ export default function RegisterScreen({
           }}
           disabled={!isValid || loading}
         >
-          {loading ? <FaSpinner className="spinner" style={{ animation: "spin 1s linear infinite" }} /> : "Registrarse"}
+          {loading
+            ? <FaSpinner className="spinner" style={{ animation: "spin 1s linear infinite" }} />
+            : "Registrarse"}
         </button>
 
+        {/* Enlace adicional */}
         <p style={styles.helpLink}>¿Necesitas ayuda?</p>
       </div>
     </div>
   );
 }
 
+// ===================== ESTILOS =====================
 const styles: { [key: string]: React.CSSProperties } = {
   overlay: {
     position: "fixed",
@@ -282,7 +303,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
 };
 
-// Agrega este CSS global en tu app para animación de spinner (si no lo tienes ya)
+// ===================== ANIMACIÓN GLOBAL SPINNER =====================
 if (typeof document !== "undefined") {
   const styleSheet = document.createElement("style");
   styleSheet.innerHTML = `
@@ -293,4 +314,3 @@ if (typeof document !== "undefined") {
   `;
   document.head.appendChild(styleSheet);
 }
-

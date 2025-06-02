@@ -1,3 +1,4 @@
+//app/(webfrontend)/profile/index.tsx
 import { useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
 import HeaderLoggedIn from "../components/HeaderLoggedIn";
