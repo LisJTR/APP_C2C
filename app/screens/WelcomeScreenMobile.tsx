@@ -41,13 +41,53 @@ export default function WelcomeScreenMobile() {
   const [showLoginOptions, setShowLoginOptions] = useState(false);
   const { t } = useTranslation();
 
+  const { user, invitado } = useAuthStore(); 
+
+  useEffect(() => {
+    const { user, invitado } = useAuthStore.getState();
+
+    console.log("ESTADO ACTUAL");
+    console.log("user:", user);
+    console.log(" invitado:", invitado);
+
+     // ✅ Si el usuario NO está logueado pero venía como invitado, limpiamos invitado
+  if (!user && invitado) {
+    // ⚠️ MUY IMPORTANTE: hacemos esto en siguiente tick para evitar conflictos
+    setTimeout(() => {
+      useAuthStore.setState({ invitado: false });
+    }, 0);
+  }
+
+  // ✅ Si está logueado (usuario real), redirigimos
+  if (user) {
+    router.replace("/(tabs)/home");
+  }
+  }, []);
+
+  const handleSkip = () => {
+    useAuthStore.getState().setInvitado(true); // Marcar como invitado
+    router.replace("/(tabs)/home"); // Ir a la pantalla principal
+  };
+
+  
+    useEffect(() => {
+      const { user, invitado } = useAuthStore.getState();
+
+      if (user || invitado) {
+        // Si ya hay usuario o modo invitado activo, redirige automáticamente
+        router.replace("/(tabs)/home");
+      }
+    }, []);
+    
   const languages = [
     { code: "es", label: "Español", sub: "Spanish" },
     { code: "en", label: "English", sub: "English" },
     { code: "pt", label: "Português", sub: "Portuguese" },
   ];
+  
 
   const { response: googleResponse, promptAsync: googleLogin } = useGoogleAuth();
+  
 
 useEffect(() => {
   if (googleResponse?.type === "success") {
@@ -74,6 +114,7 @@ const loginWithGoogleToken = async (token: string) => {
 };
 
 
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Idioma y Saltar */}
@@ -83,9 +124,14 @@ const loginWithGoogleToken = async (token: string) => {
              🌐 {String(languages.find((l) => l.code === selectedLanguage)?.label || "")}
             </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.replace("/(tabs)/home")}>
-          <Text style={styles.skip}>{t("welcomeScreenMobile.skip")}</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+        onPress={() => {
+          useAuthStore.getState().setInvitado(true);
+          router.replace("/(tabs)/home");
+        }}
+      >
+        <Text style={styles.skip}>{t("welcomeScreenMobile.skip")}</Text>
+      </TouchableOpacity>
       </View>
 
     {/* Modal de Crear cuenta */}

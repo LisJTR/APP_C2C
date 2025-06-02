@@ -1,4 +1,5 @@
 import axios from "axios";
+
 import { API_BASE_URL } from "@/utils/config";
 
 export const registerUser = async (username, email, password, location, bio, country_id) => {

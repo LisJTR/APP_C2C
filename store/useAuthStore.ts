@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types/types";
 
@@ -7,11 +7,14 @@ import { User } from "../types/types";
 interface AuthState {
   token: string | null;
   user: User | null;
+  invitado: boolean;
   login: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
+  setInvitado: (valor: boolean) => void;
+  setInvitadoTrue: () => void;
   updateUser: (newUser: User) => Promise<void>;
-  setUser: (user: User) => void; // ✅ agregado para actualizar en el estado
+  setUser: (user: User) => void; 
 }
 
 // 📌 Zustand con persistencia
@@ -20,32 +23,36 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       token: null,
       user: null,
+      invitado: false,
 
-      setUser: (user) => set({ user }), // ✅ Añadido aquí
+      setUser: (user) => set({ user }), 
+      setInvitado: (valor) => set({ invitado: valor }),
+      setInvitadoTrue: () => set({ invitado: true }),
 
-      // 📌 Iniciar sesión
+
+      // Iniciar sesión
       login: async (token, user) => {
         try {
           await AsyncStorage.setItem("token", token);
           await AsyncStorage.setItem("user", JSON.stringify(user));
-          set({ token, user });
+          set({ token, user, invitado: false });
         } catch (error) {
           console.error("Error guardando sesión:", error);
         }
       },
 
-      // 📌 Cerrar sesión
+      // Cerrar sesión
       logout: async () => {
         try {
           await AsyncStorage.removeItem("token");
           await AsyncStorage.removeItem("user");
-          set({ token: null, user: null });
+          set({ token: null, user: null, invitado: false });
         } catch (error) {
           console.error("Error cerrando sesión:", error);
         }
       },
 
-      // 📌 Cargar sesión
+      // Cargar sesión
       loadUser: async () => {
   try {
     let token: string | null = null;
@@ -72,7 +79,7 @@ export const useAuthStore = create<AuthState>()(
   }
 },
 
-      // 📌 Actualizar usuario
+      //  Actualizar usuario
       updateUser: async (newUser) => {
         try {
           const token = get().token;
@@ -87,18 +94,16 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
-      storage: {
-        getItem: async (key) => {
-          const value = await AsyncStorage.getItem(key);
-          return value ? JSON.parse(value) : null;
-        },
-        setItem: async (key, value) => {
-          await AsyncStorage.setItem(key, JSON.stringify(value));
-        },
-        removeItem: async (key) => {
-          await AsyncStorage.removeItem(key);
-        },
-      },
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user
+      }),
     }
   )
+
 );
+
+setTimeout(() => {
+  useAuthStore.setState({ invitado: false });
+}, 0);

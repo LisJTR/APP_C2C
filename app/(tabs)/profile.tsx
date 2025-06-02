@@ -25,7 +25,7 @@ import { useRouter } from "expo-router";
 export default function ProfileScreen() {
 
   const { t } = useTranslation();
-  const { user, loadUser, updateUser } = useAuthStore();
+  const { user, loadUser, updateUser, invitado } = useAuthStore();
   const [loading, setLoading] = useState(false);
 
   const [username, setUsername] = useState("");
@@ -34,6 +34,24 @@ export default function ProfileScreen() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const navigation = useNavigation();
   const router = useRouter();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+
+
+  useEffect(() => {
+  let isMounted = true;
+
+  if (!user && invitado) {
+    setTimeout(() => {
+      if (isMounted) {
+        setShowAccessModal(true);
+      }
+    }, 0);
+  }
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
 
 
     useEffect(() => {
@@ -48,6 +66,28 @@ export default function ProfileScreen() {
         setAvatarUrl(user.avatar_url || "");
       }
     }, [user]);
+    if (!user && invitado) {
+      return (
+        <View style={{ flex: 1 }}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Acceso restringido</Text>
+              <Text style={styles.modalText}>
+                Debes registrarte o iniciar sesión para continuar.
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  useAuthStore.getState().setInvitado(false);
+                  router.push("/screens/WelcomeScreenMobile");
+                }}
+              >
+                <Text style={styles.modalLink}>Registrate ahora</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      );
+    }
 
     if (!user) {
       return (
@@ -158,13 +198,14 @@ export default function ProfileScreen() {
 
 
   return (
+     <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={styles.container}>
       {/* Barra superior con icono de ajustes */}
       <View style={styles.header}>
         <View style={{ flex: 1 }} />
         <TouchableOpacity
-  style={styles.settingsIcon}
-  onPress={() => {
+    style={styles.settingsIcon}
+    onPress={() => {
     Alert.alert(
       "Ajustes",
       "¿Deseas cerrar sesión?",
@@ -181,10 +222,10 @@ export default function ProfileScreen() {
       ],
       { cancelable: true }
     );
-  }}
->
-  <Ionicons name="settings-outline" size={24} color="#333" />
-</TouchableOpacity>
+    }}
+    >
+      <Ionicons name="settings-outline" size={24} color="#333" />
+    </TouchableOpacity>
 
       </View>
   
@@ -223,6 +264,8 @@ export default function ProfileScreen() {
   
       {loading && <ActivityIndicator size="small" color="#007AFF" style={{ marginTop: 20 }} />}
     </ScrollView>
+  
+      </View>
   );
   
 }
@@ -294,6 +337,40 @@ const styles = StyleSheet.create({
     right: 10,
     zIndex: 1,
   },
+  modalOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 1000,
+},
+modalContainer: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderRadius: 10,
+  alignItems: "center",
+  width: "80%",
+},
+modalTitle: {
+  fontSize: 18,
+  fontWeight: "bold",
+  marginBottom: 10,
+},
+modalText: {
+  fontSize: 16,
+  textAlign: "center",
+  marginBottom: 10,
+},
+modalLink: {
+  color: "#2F70AF",
+  fontWeight: "bold",
+  textDecorationLine: "underline",
+  fontSize: 16,
+},
 
   
 });

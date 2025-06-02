@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -16,16 +16,37 @@ import axios from "axios";
 import { API_BASE_URL } from "../../utils/config";
 import { useAuthStore } from "../../store/useAuthStore";
 import { ALL_CATEGORIES } from "../../constants/categories";
+import { useRouter } from "expo-router";
 
 export default function SellScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
+  const [size, setSize] = useState("");
+  const [condition, setCondition] = useState("");
+  const [brand, setBrand] = useState("");
+
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showConditionDropdown, setShowConditionDropdown] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const user = useAuthStore((state) => state.user);
+
+  const { user, invitado } = useAuthStore();
+  const router = useRouter();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!user && invitado) {
+      setTimeout(() => {
+        if (isMounted) setShowAccessModal(true);
+      }, 0);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const pickImageFromGallery = async () => {
     const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -33,13 +54,11 @@ export default function SellScreen() {
       Alert.alert("Permiso requerido", "Permite acceso a la galería");
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.7,
     });
-
     if (!result.canceled && result.assets.length > 0) {
       const image = result.assets[0];
       setImages((prev) => [...prev, image.uri]);
@@ -52,12 +71,10 @@ export default function SellScreen() {
       Alert.alert("Permiso requerido", "Permite acceso a la cámara");
       return;
     }
-
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 0.7,
     });
-
     if (!result.canceled && result.assets.length > 0) {
       const image = result.assets[0];
       setImages((prev) => [...prev, image.uri]);
@@ -65,7 +82,7 @@ export default function SellScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!title || !description || !price || !category || images.length === 0) {
+    if (!title || !description || !price || !category || !size || !condition || !brand || images.length === 0) {
       Alert.alert("Campos requeridos", "Por favor, rellena todos los campos.");
       return;
     }
@@ -101,20 +118,24 @@ export default function SellScreen() {
         description,
         price,
         category,
-        size: "",
-        condition: "",
-        brand: "",
+        size,
+        condition,
+        brand,
         images: imageUrls,
       });
 
       Alert.alert("Éxito", "Producto subido correctamente.");
+      // Limpiar formulario
       setTitle("");
       setDescription("");
       setPrice("");
       setCategory("");
+      setSize("");
+      setCondition("");
+      setBrand("");
       setImages([]);
-    } catch (error) {
-      console.error("Error al subir producto", error);
+    } catch (error: any) {
+      console.error("🟥 Error al subir producto:", error?.response?.data || error.message || error);
       Alert.alert("Error", "No se pudo subir el producto.");
     } finally {
       setLoading(false);
@@ -122,84 +143,150 @@ export default function SellScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>Vender</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.header}>Vender</Text>
 
-      <View style={styles.uploadRow}>
-        <TouchableOpacity style={styles.uploadButton} onPress={pickImageFromGallery}>
-          <Ionicons name="image-outline" size={24} color="#007AFF" />
-          <Text style={styles.uploadText}>Galería</Text>
+        <View style={styles.uploadRow}>
+          <TouchableOpacity style={styles.uploadButton} onPress={pickImageFromGallery}>
+            <Ionicons name="image-outline" size={24} color="#007AFF" />
+            <Text style={styles.uploadText}>Galería</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.uploadButton} onPress={takePhotoWithCamera}>
+            <Ionicons name="camera-outline" size={24} color="#007AFF" />
+            <Text style={styles.uploadText}>Cámara</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView horizontal style={styles.previewContainer}>
+          {images.map((uri, idx) => (
+            <Image key={idx} source={{ uri }} style={styles.previewImage} />
+          ))}
+        </ScrollView>
+
+        {/* Campos de texto */}
+        <Text style={styles.label}>Título</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ejemplo: Camisa de cuadros de Zara"
+          value={title}
+          onChangeText={setTitle}
+        />
+
+        <Text style={styles.label}>Descripción</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ejemplo: Usado una vez, da poca talla, etc."
+          value={description}
+          onChangeText={setDescription}
+        />
+
+        <Text style={styles.label}>Categoría</Text>
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+        >
+          <Text>{category ? category : "Seleccionar categoría"}</Text>
+        </TouchableOpacity>
+        {showCategoryDropdown && (
+          <View style={styles.dropdown}>
+            {ALL_CATEGORIES.map((cat) => (
+              <TouchableOpacity
+                key={cat.key}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setCategory(cat.key);
+                  setShowCategoryDropdown(false);
+                }}
+              >
+                <Text>{cat.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        <Text style={styles.label}>Talla</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ej: M, L, 42, etc."
+          value={size}
+          onChangeText={setSize}
+        />
+
+        <Text style={styles.label}>Marca</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ej: Zara, Adidas, etc."
+          value={brand}
+          onChangeText={setBrand}
+        />
+
+        <Text style={styles.label}>Estado</Text>
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => setShowConditionDropdown(!showConditionDropdown)}
+        >
+          <Text>{condition ? condition : "Seleccionar estado"}</Text>
+        </TouchableOpacity>
+        {showConditionDropdown && (
+          <View style={styles.dropdown}>
+            {["Nuevo", "Nuevo con etiqueta", "Muy bueno", "Usado", "Defectuoso"].map((estado) => (
+              <TouchableOpacity
+                key={estado}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setCondition(estado);
+                  setShowConditionDropdown(false);
+                }}
+              >
+                <Text>{estado}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        <Text style={styles.label}>Precio (€)</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          placeholder="Ej: 20.00"
+          value={price}
+          onChangeText={setPrice}
+        />
+
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.submitText}>Subir</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.uploadButton} onPress={takePhotoWithCamera}>
-          <Ionicons name="camera-outline" size={24} color="#007AFF" />
-          <Text style={styles.uploadText}>Cámara</Text>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView horizontal style={styles.previewContainer}>
-        {images.map((uri, idx) => (
-          <Image key={idx} source={{ uri }} style={styles.previewImage} />
-        ))}
+        {loading && <ActivityIndicator style={{ marginTop: 10 }} />}
       </ScrollView>
 
-      <Text style={styles.label}>Título</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Ejemplo: Camisa de cuadros de Zara"
-        value={title}
-        onChangeText={setTitle}
-      />
-
-      <Text style={styles.label}>Descripción</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Ejemplo: Usado una vez, da poca talla, etc."
-        value={description}
-        onChangeText={setDescription}
-      />
-
-      <Text style={styles.label}>Categoría</Text>
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
-      >
-        <Text>{category ? category : "Seleccionar categoría"}</Text>
-      </TouchableOpacity>
-      {showCategoryDropdown && (
-        <View style={styles.dropdown}>
-          {ALL_CATEGORIES.map((cat) => (
+      {/* Modal de acceso restringido */}
+      {showAccessModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Acceso restringido</Text>
+            <Text style={styles.modalText}>
+              Debes registrarte o iniciar sesión para continuar.
+            </Text>
             <TouchableOpacity
-              key={cat.key}
-              style={styles.dropdownItem}
               onPress={() => {
-                setCategory(cat.key);
-                setShowCategoryDropdown(false);
+                setShowAccessModal(false);
+                useAuthStore.getState().setInvitado(false);
+                router.push("/screens/WelcomeScreenMobile");
               }}
             >
-              <Text>{cat.label}</Text>
+              <Text style={styles.modalLink}>Regístrate ahora</Text>
             </TouchableOpacity>
-          ))}
+          </View>
         </View>
       )}
-
-      <Text style={styles.label}>Precio (€)</Text>
-      <TextInput
-        style={styles.input}
-        keyboardType="numeric"
-        value={price}
-        onChangeText={setPrice}
-      />
-
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitText}>Subir</Text>
-      </TouchableOpacity>
-
-      {loading && <ActivityIndicator style={{ marginTop: 10 }} />}
-    </ScrollView>
+    </View>
   );
 }
 
+// Styles (igual que antes)
 const styles = StyleSheet.create({
   container: {
     padding: 20,
@@ -272,6 +359,40 @@ const styles = StyleSheet.create({
   submitText: {
     color: "white",
     fontWeight: "bold",
+    fontSize: 16,
+  },
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    width: "80%",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  modalLink: {
+    color: "#2F70AF",
+    fontWeight: "bold",
+    textDecorationLine: "underline",
     fontSize: 16,
   },
 });
