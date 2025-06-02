@@ -1,5 +1,10 @@
 // app/email-verification/[email].tsx
-import EmailVerification from "@/components/Bridges/ModalsWeb/EmailVerification";
+import { Platform } from "react-native";
+
+const EmailVerification =
+  Platform.OS === "web"
+    ? require("../../components/Bridges/ModalsWeb/EmailVerification").default
+    : require("../../components/Bridges/Mobile/EmailVerificationApp").default;
 import { useLocalSearchParams } from "expo-router";
 
 export default function EmailVerificationPage() {

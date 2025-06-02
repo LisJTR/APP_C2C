@@ -15,6 +15,8 @@ import Modal from 'react-native-modal';
 import { API_BASE_URL } from '@/utils/config';
 import { Product } from '@/types/Product';
 import { useAuthStore } from '@/store/useAuthStore';
+import { buildFullImageUrl } from '@/utils/imageUtils';
+
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -76,7 +78,7 @@ export default function ProductDetailScreen() {
             initialScrollIndex={selectedImageIndex}
             keyExtractor={(item, index) => `${item}-${index}`}
             renderItem={({ item }) => (
-              <Image source={{ uri: item }} style={styles.fullscreenImage} />
+              <Image source={{ uri: buildFullImageUrl(item, API_BASE_URL) }} style={styles.fullscreenImage} />
             )}
           />
         </View>
@@ -94,7 +96,7 @@ export default function ProductDetailScreen() {
             setSelectedImageIndex(index);
             setModalVisible(true);
           }}>
-            <Image source={{ uri: item }} style={styles.image} />
+            <Image source={{ uri: buildFullImageUrl(item, API_BASE_URL) }} style={styles.image} />
           </TouchableOpacity>
         )}
       />

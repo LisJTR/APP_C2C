@@ -84,7 +84,8 @@ const animatedIconStyle = useAnimatedStyle(() => ({
     setIsLoading(false);
 
     if (result.user) {
-      router.replace("./screens/LoginScreen");
+      router.replace(`/email-verification/${encodeURIComponent(email)}`);
+      console.log("🧪 Email recibido:", email);
     } else {
       alert(result.message || t("registerScreen.registerError"));
     }
@@ -202,7 +203,8 @@ const animatedIconStyle = useAnimatedStyle(() => ({
             !termsChecked || !!usernameError || !!emailError || !!passwordError || !username || !email || !password
           }
         >
-          <Text style={styles.buttonText}>{t("registerSceen.registerBtn")}</Text>
+          <Text style={styles.buttonText}>{t("registerScreen.registerBtn")}</Text>
+
         </TouchableOpacity>
       )}
 

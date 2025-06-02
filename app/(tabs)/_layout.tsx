@@ -39,7 +39,7 @@ export default function TabLayout() {
     }}
   />
 
-  {/* 💬 Mensajes */}
+  {/* 💬 Mensajes 
   <Tabs.Screen
     name="messages"
     options={{
@@ -47,7 +47,7 @@ export default function TabLayout() {
       headerShown: false,
       tabBarIcon: ({ color }) => <Ionicons size={28} name="chatbubbles" color={color} />,
     }}
-  />
+  />*/}
 
   {/* 🛒 Vende */}
   <Tabs.Screen
