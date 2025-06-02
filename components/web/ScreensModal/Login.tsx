@@ -1,88 +1,105 @@
-// components/web/ScreensModal/LoginScreen.tsx
-import React, { useState } from "react";
-import { Eye, EyeOff, X } from "lucide-react";
-import { loginUser } from "@/api/api";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useRouter } from "expo-router";
+// LoginScreen.tsx
 
+// ===================== IMPORTACIONES NECESARIAS =====================
+import React, { useState } from "react"; // Importación de React y hook useState
+import { Eye, EyeOff, X } from "lucide-react"; // Iconos de Lucide usados para la UI
+import { loginUser } from "@/api/api"; // Función que realiza la llamada a la API de login
+import { useAuthStore } from "@/store/useAuthStore"; // Hook de Zustand para manejar el estado global de autenticación
+import { useRouter } from "expo-router"; // Hook de navegación proporcionado por Expo Router
+
+// ===================== COMPONENTE LOGINSCREEN =====================
+/**
+ * Componente de formulario de login mostrado como modal.
+ * Recibe una función `onClose` para cerrar el modal desde el componente padre.
+ */
 export default function LoginScreen({ onClose }: { onClose: () => void }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
-    const [isLogin, setIsLogin] = useState(true);
-  
-    const [emailError, setEmailError] = useState("");
-    const [passwordError, setPasswordError] = useState("");
-    const [usernameError, setUsernameError] = useState("");
-    const [generalError, setGeneralError] = useState("");
-    const [loading, setLoading] = useState(false);
-  
-    const login = useAuthStore((state) => state.login);
-    const router = useRouter();
+  // -------------------- ESTADOS LOCALES --------------------
+  const [email, setEmail] = useState(""); // Campo de correo electrónico
+  const [password, setPassword] = useState(""); // Campo de contraseña
+  const [showPassword, setShowPassword] = useState(false); // Alternar visibilidad de la contraseña
+  const [username, setUsername] = useState(""); // Campo de nombre de usuario (no usado en este formulario)
+  const [isLogin, setIsLogin] = useState(true); // Determina si estamos en modo login o registro
 
-    const validateEmail = (value: string) => {
-      setEmail(value);
-      setEmailError(
-        !value.includes("@") || !value.includes(".") ? "Correo inválido." : ""
-      );
-    };
+  // -------------------- ESTADOS DE ERROR --------------------
+  const [emailError, setEmailError] = useState(""); // Error de validación del email
+  const [passwordError, setPasswordError] = useState(""); // Error de validación de contraseña
+  const [usernameError, setUsernameError] = useState(""); // Error del nombre de usuario (no usado aquí)
+  const [generalError, setGeneralError] = useState(""); // Mensaje de error general
+  const [loading, setLoading] = useState(false); // Estado de carga para el botón
 
-    const validatePassword = (value: string) => {
-      setPassword(value);
-      setPasswordError(value.length < 6 ? "Mínimo 6 caracteres." : "");
-    };
-  
-    const validateUsername = (value: string) => {
-      setUsername(value);
-      setUsernameError(value.trim().length === 0 ? "Nombre de usuario obligatorio." : "");
-    };
-  
-    const handleSubmit = async () => {
-      setGeneralError("");
-      if (
-        !email || !password ||
-        emailError || passwordError ||
-        (!isLogin && (usernameError || !username))
-      ) {
-        setGeneralError("Por favor, completa todos los campos correctamente.");
-        return;
-      }
-  
-      setLoading(true);
-      if (isLogin) {
-        const result = await loginUser(email, password);
-        setLoading(false);
-  
-        if (result.token && result.user) {
-  // Guardar el token en sessionStorage
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem("token", result.token);
-  }
+  // -------------------- FUNCIONES EXTERNAS --------------------
+  const login = useAuthStore((state) => state.login); // Función para actualizar el estado global de sesión
+  const router = useRouter(); // Navegador para redirección
 
-  // Actualizar estado global
-  login(result.token, result.user);
+  // -------------------- FUNCIONES DE VALIDACIÓN --------------------
+  const validateEmail = (value: string) => {
+    setEmail(value);
+    setEmailError(
+      !value.includes("@") || !value.includes(".") ? "Correo inválido." : ""
+    );
+  };
 
-  // Cerrar modal y redirigir
-  onClose();
-  router.replace("/"); // o "/(webfrontend)" si esa es tu home real
-}
- else {
-          setGeneralError(result.message || "Error al iniciar sesión.");
+  const validatePassword = (value: string) => {
+    setPassword(value);
+    setPasswordError(value.length < 6 ? "Mínimo 6 caracteres." : "");
+  };
+
+  const validateUsername = (value: string) => {
+    setUsername(value);
+    setUsernameError(value.trim().length === 0 ? "Nombre de usuario obligatorio." : "");
+  };
+
+  // -------------------- ENVÍO DEL FORMULARIO --------------------
+  const handleSubmit = async () => {
+    setGeneralError("");
+
+    // Validación de campos obligatorios
+    if (
+      !email || !password ||
+      emailError || passwordError ||
+      (!isLogin && (usernameError || !username))
+    ) {
+      setGeneralError("Por favor, completa todos los campos correctamente.");
+      return;
+    }
+
+    setLoading(true); // Inicia animación de carga
+
+    // Sólo login (registro no implementado)
+    if (isLogin) {
+      const result = await loginUser(email, password); // Llamada a la API
+      setLoading(false);
+
+      if (result.token && result.user) {
+        // Guardar token en el navegador (opcional)
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("token", result.token);
         }
+
+        // Guardar sesión global
+        login(result.token, result.user);
+
+        // Cerrar modal y redirigir
+        onClose();
+        router.replace("/"); // Redirige a la pantalla principal
+      } else {
+        setGeneralError(result.message || "Error al iniciar sesión.");
       }
-    };
+    }
+  };
 
-
+  // ===================== RENDERIZADO =====================
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
+        {/* Botón para cerrar el modal */}
         <button style={styles.closeButton} onClick={onClose}>
           <X size={22} />
         </button>
 
         <h2 style={styles.title}>Iniciar sesión</h2>
 
+        {/* Campo de e-mail */}
         <input
           style={styles.input}
           placeholder="E-mail o nombre de usuario"
@@ -90,6 +107,7 @@ export default function LoginScreen({ onClose }: { onClose: () => void }) {
           onChange={(e) => setEmail(e.target.value)}
         />
 
+        {/* Campo de contraseña con botón para mostrar/ocultar */}
         <div style={styles.passwordWrapper}>
           <input
             type={showPassword ? "text" : "password"}
@@ -106,26 +124,28 @@ export default function LoginScreen({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
+        {/* Botón de envío */}
         <button
-  onClick={handleSubmit}
-  style={{
-    ...styles.button,
-    backgroundColor: "#007AFF",
-    opacity: email && password ? 1 : 0.5,
-    cursor: email && password ? "pointer" : "not-allowed",
-  }}
-  disabled={!email || !password}
->
-  {loading ? "Cargando..." : "Continuar"}
-</button>
+          onClick={handleSubmit}
+          style={{
+            ...styles.button,
+            backgroundColor: "#007AFF",
+            opacity: email && password ? 1 : 0.5,
+            cursor: email && password ? "pointer" : "not-allowed",
+          }}
+          disabled={!email || !password}
+        >
+          {loading ? "Cargando..." : "Continuar"}
+        </button>
 
-{generalError && (
-  <p style={{ color: "red", fontSize: 13, textAlign: "center", marginTop: 8 }}>
-    {generalError}
-  </p>
-)}
+        {/* Error general del formulario */}
+        {generalError && (
+          <p style={{ color: "red", fontSize: 13, textAlign: "center", marginTop: 8 }}>
+            {generalError}
+          </p>
+        )}
 
-
+        {/* Enlaces adicionales */}
         <p style={styles.link}>¿Olvidaste tu contraseña?</p>
         <p style={styles.link}>¿Necesitas ayuda?</p>
       </div>
@@ -133,74 +153,74 @@ export default function LoginScreen({ onClose }: { onClose: () => void }) {
   );
 }
 
+// ===================== ESTILOS =====================
 const styles: { [key: string]: React.CSSProperties } = {
   overlay: {
     position: "fixed",
-    inset: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 9999,
+    zIndex: 1000,
   },
   modal: {
     backgroundColor: "#fff",
-    width: 400,
-    borderRadius: 12,
     padding: 24,
+    borderRadius: 12,
+    width: "90%",
+    maxWidth: 400,
     position: "relative",
-    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
-    fontFamily: "sans-serif",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
   },
   closeButton: {
     position: "absolute",
     top: 12,
-    right: 14,
-    background: "none",
+    right: 12,
+    background: "transparent",
     border: "none",
     cursor: "pointer",
   },
   title: {
-    textAlign: "center",
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 24,
+    textAlign: "center",
+    marginBottom: 20,
   },
   input: {
     width: "100%",
-    padding: "12px 3px",
-    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
     border: "1px solid #ccc",
-    marginBottom: 14,
+    borderRadius: 6,
     fontSize: 14,
-    outline: "none",
   },
   passwordWrapper: {
     position: "relative",
   },
   eyeButton: {
     position: "absolute",
-    top: 10,
     right: 10,
+    top: "50%",
+    transform: "translateY(-50%)",
     background: "transparent",
     border: "none",
     cursor: "pointer",
   },
   button: {
-    marginTop: 10,
     width: "100%",
-    padding: 12,
-    color: "#fff",
-    fontWeight: "bold",
-    borderRadius: 8,
+    padding: 10,
+    borderRadius: 6,
     border: "none",
+    fontSize: 16,
+    color: "#fff",
+    marginTop: 10,
   },
   link: {
-    marginTop: 16,
     textAlign: "center",
     color: "#007AFF",
+    marginTop: 12,
     fontSize: 14,
     cursor: "pointer",
-    fontWeight: "500",
   },
 };

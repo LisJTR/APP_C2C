@@ -1,4 +1,6 @@
 // app/members/[query].tsx
+import { useRouter } from "expo-router";
+import { TouchableOpacity, Image } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import Header from "@/components/Bridges/HeadersWeb/Header";
@@ -7,12 +9,14 @@ import Footer from "@/components/Bridges/HeadersWeb/Footer";
 import AuthModal from "@/components/Bridges/ModalsWeb/AuthModal";
 import { View, Text, StyleSheet, Platform, ScrollView } from "react-native";
 import { isLoggedIn } from "@/utils/auth";
+import { API_BASE_URL } from "@/utils/config"; // 👈 Asegúrate de tener esto
 
 export default function MembersPage() {
   const { query } = useLocalSearchParams();
   const [members, setMembers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [logged, setLogged] = useState(false);
+  const router = useRouter();
 
   const fetchMembers = async () => {
     try {
@@ -53,19 +57,34 @@ export default function MembersPage() {
           <Text style={styles.noResults}>No hay resultados.</Text>
         ) : (
           <View style={styles.grid}>
-            {members.map((member: any) => (
-              <View key={member.id} style={styles.card}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarLetter}>
-                    {member.username?.charAt(0).toUpperCase() || "?"}
-                  </Text>
-                </View>
-                <View>
-                  <Text style={styles.username}>{member.username}</Text>
-                  <Text style={styles.subtitle}>Aún no hay valoraciones</Text>
-                </View>
-              </View>
-            ))}
+            {members.map((member: any) => {
+              console.log("Avatar URL:", member.avatar_url);
+
+              return (
+                <TouchableOpacity
+                  key={member.id}
+                  style={styles.card}
+                  onPress={() => router.push(`/user/${member.id}`)}
+                >
+                  {member.avatar_url ? (
+                    <Image
+                      source={{ uri: `${API_BASE_URL.replace("/api", "")}${member.avatar_url}` }}
+                      style={styles.avatarImage}
+                    />
+                  ) : (
+                    <View style={styles.avatar}>
+                      <Text style={styles.avatarLetter}>
+                        {member.username?.charAt(0).toUpperCase() || "?"}
+                      </Text>
+                    </View>
+                  )}
+                  <View>
+                    <Text style={styles.username}>{member.username}</Text>
+                    <Text style={styles.subtitle}>Aún no hay valoraciones</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         )}
       </View>
@@ -123,6 +142,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 18,
+  },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+    resizeMode: "cover",
   },
   username: {
     fontWeight: "600",

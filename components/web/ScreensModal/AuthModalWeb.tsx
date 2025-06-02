@@ -1,19 +1,31 @@
-// components/web/AuthModalWeb.tsx
+// Importamos componentes de interfaz nativos de React Native
 import { View, Modal, Text, Pressable, StyleSheet } from "react-native";
+
+// Importamos íconos de bibliotecas externas
 import { FontAwesome, AntDesign } from "@expo/vector-icons";
+
+// Hooks y módulos de navegación y almacenamiento seguro
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 
+// Importamos los componentes de inicio de sesión y registro
 import RegisterScreen from "../ScreensModal/Register";
 import LoginScreen from "../ScreensModal/Login";
+
+// Hooks personalizados para autenticación con redes sociales
 import { useGoogleAuth, useFacebookAuth } from "@/hooks/auth/useSocialAuth";
+
+// Hook global para almacenar y recuperar el estado del usuario autenticado
 import { useAuthStore } from "@/store/useAuthStore";
+
+// Función API para login con Google (en backend)
 import { loginWithGoogle } from "@/api/api";
 
+// Componente principal: Modal de autenticación para la versión web
 export default function AuthModalWeb({
-  visible,
-  onClose,
+  visible,        // Si el modal debe mostrarse
+  onClose,        // Función que se llama al cerrar el modal
 }: {
   visible: boolean;
   onClose: () => void;
@@ -24,6 +36,7 @@ export default function AuthModalWeb({
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
 
+  // Hooks para Google y Facebook Auth
   const {
     promptAsync: googlePrompt,
     response: googleResponse,
@@ -33,6 +46,7 @@ export default function AuthModalWeb({
     response: facebookResponse,
   } = useFacebookAuth();
 
+  // Cuando el registro es exitoso, se redirige a verificación por email
   const handleRegisterSuccess = (email: string) => {
     setShowRegister(false);
     onClose();
@@ -44,19 +58,21 @@ export default function AuthModalWeb({
     }, 100);
   };
 
+  // Cierra el modal y reinicia los estados internos
   const handleClose = () => {
     setShowRegister(false);
     setShowLogin(false);
     onClose();
   };
 
+  // Maneja el login con Google una vez se recibe respuesta
   useEffect(() => {
     const handleGoogleLogin = async () => {
       if (googleResponse?.type === "success" && googleResponse.authentication?.accessToken) {
         try {
           const result = await loginWithGoogle(googleResponse.authentication.accessToken);
           console.log("🟢 Resultado backend Google:", result);
-  
+
           if (result.token) {
             await SecureStore.setItemAsync("token", result.token);
             login(result.token, {
@@ -64,7 +80,6 @@ export default function AuthModalWeb({
               username: result.user.username,
               email: result.user.email,
             });
-  
             handleClose();
             router.replace("/(webfrontend)");
           } else {
@@ -76,12 +91,10 @@ export default function AuthModalWeb({
         }
       }
     };
-  
     handleGoogleLogin();
   }, [googleResponse]);
-  
-  
 
+  // Maneja el login con Facebook
   useEffect(() => {
     const handleFacebookLogin = async () => {
       if (facebookResponse?.type === "success" && facebookResponse.authentication?.accessToken) {
@@ -89,7 +102,6 @@ export default function AuthModalWeb({
         login(facebookResponse.authentication.accessToken, {
           username: "FacebookUser",
           email: "facebookuser@demo.com",
-          //id: "facebook123",
         });
         handleClose();
         router.replace("/(webfrontend)");
@@ -98,6 +110,7 @@ export default function AuthModalWeb({
     handleFacebookLogin();
   }, [facebookResponse]);
 
+  // Renderizado del modal con sus variantes
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
@@ -119,6 +132,7 @@ export default function AuthModalWeb({
                 Únete y vende los productos que no uses sin pagar comisión
               </Text>
 
+              {/* Botones sociales */}
               <Pressable style={styles.socialBtn} onPress={() => googlePrompt()}>
                 <AntDesign name="google" size={18} color="#DB4437" />
                 <Text style={styles.socialText}>Continuar con Google</Text>
@@ -133,6 +147,7 @@ export default function AuthModalWeb({
 
               <Text style={styles.separator}>O usa tu correo</Text>
 
+              {/* Enlaces para login o registro */}
               <View style={styles.linkGroup}>
                 <Text style={styles.linkText}>
                   ¿No tienes cuenta?{" "}
@@ -155,6 +170,7 @@ export default function AuthModalWeb({
   );
 }
 
+// Estilos del modal
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,

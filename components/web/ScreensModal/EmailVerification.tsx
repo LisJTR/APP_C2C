@@ -1,14 +1,30 @@
+// Importamos React y useState para gestionar estados locales
 import React, { useState } from "react";
+
+// Importamos el router para navegación
 import { useRouter } from "expo-router";
+
+// Importamos el hook global de Zustand para gestionar la sesión
 import { useAuthStore } from "@/store/useAuthStore";
 
+// Componente para verificación del código enviado por e-mail
 export default function EmailVerification({ email }: { email: string }) {
+  // Estado del código ingresado
   const [code, setCode] = useState("");
+
+  // Controla si se muestra la información para reenviar el código
   const [showResendInfo, setShowResendInfo] = useState(false);
+
+  // Dirección de e-mail para reenviar el código
   const [resendEmail, setResendEmail] = useState(email);
+
+  // Mensaje de éxito tras reenviar
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Hook para redireccionar
   const router = useRouter();
 
+  // Verifica el código ingresado
   const handleVerify = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/auth/verify-code", {
@@ -16,35 +32,35 @@ export default function EmailVerification({ email }: { email: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code }),
       });
-  
+
       const data = await res.json();
-  
+
       if (res.ok) {
-  // 🧠 Guardar token en sessionStorage
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem("token", data.token);
-  }
+        // 🧠 Guardar token en sessionStorage (solo si hay ventana disponible)
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("token", data.token);
+        }
 
-  // ✅ Actualizar Zustand con login
-  const login = useAuthStore.getState().login;
-  login(data.token, {
-    id: data.user.id,
-    username: data.user.username,
-    email: data.user.email,
-  });
+        // ✅ Actualizar estado global con el login
+        const login = useAuthStore.getState().login;
+        login(data.token, {
+          id: data.user.id,
+          username: data.user.username,
+          email: data.user.email,
+        });
 
-  // ✅ Redirigir
-  router.replace("/");
-}
- else {
+        // ✅ Redirige a la pantalla principal
+        router.replace("/");
+      } else {
         alert(data.message || "Código incorrecto");
       }
     } catch (err) {
       alert("Error al verificar el código");
       console.error(err);
     }
-  };  
+  };
 
+  // Reenvía el código de verificación
   const handleResend = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/auth/resend-code", {
@@ -64,6 +80,7 @@ export default function EmailVerification({ email }: { email: string }) {
     }
   };
 
+  // Renderizado de la interfaz
   return (
     <div style={styles.page}>
       <div style={styles.container}>
@@ -71,12 +88,14 @@ export default function EmailVerification({ email }: { email: string }) {
 
         {!showResendInfo ? (
           <>
+            {/* Instrucciones */}
             <p style={styles.text}>
               Introduce el código de verificación de 6 dígitos que hemos enviado a:
               <br />
               <strong>{email}</strong>
             </p>
 
+            {/* Campo para ingresar código */}
             <input
               type="text"
               maxLength={6}
@@ -86,6 +105,7 @@ export default function EmailVerification({ email }: { email: string }) {
               style={styles.input}
             />
 
+            {/* Botón para verificar */}
             <button
               onClick={handleVerify}
               style={{
@@ -98,6 +118,7 @@ export default function EmailVerification({ email }: { email: string }) {
               Verificar
             </button>
 
+            {/* Enlaces de ayuda */}
             <p style={styles.link} onClick={() => setShowResendInfo(true)}>
               ¿No has recibido el código?
             </p>
@@ -106,6 +127,7 @@ export default function EmailVerification({ email }: { email: string }) {
           </>
         ) : (
           <>
+            {/* Sección para reenviar el código */}
             <h3 style={{ marginBottom: 12 }}>No he recibido el e-mail</h3>
             <ul style={styles.list}>
               <li>Asegúrate de que has introducido tu dirección de e-mail correctamente.</li>
@@ -120,6 +142,7 @@ export default function EmailVerification({ email }: { email: string }) {
               </li>
             </ul>
 
+            {/* Campo para corregir el e-mail */}
             <input
               style={styles.input}
               value={resendEmail}
@@ -128,20 +151,24 @@ export default function EmailVerification({ email }: { email: string }) {
             />
             <small>Comprueba que tu dirección de e-mail sea la correcta</small>
 
+            {/* Mensaje tras reenviar */}
             {successMessage && (
               <p style={{ color: "green", marginTop: 10 }}>{successMessage}</p>
             )}
 
+            {/* Botón de reenvío */}
             <button onClick={handleResend} style={styles.button}>
               Reenviar el código de verificación
             </button>
 
+            {/* Botón para volver */}
             <button onClick={() => setShowResendInfo(false)} style={styles.secondaryButton}>
               ← Volver
             </button>
           </>
         )}
 
+        {/* Pie de página con enlaces */}
         <div style={styles.footer}>
           <a href="#">Política de Privacidad</a>
           <a href="#">Términos y condiciones</a>
@@ -152,6 +179,7 @@ export default function EmailVerification({ email }: { email: string }) {
   );
 }
 
+// Estilos CSS en objeto JS
 const styles: { [key: string]: React.CSSProperties } = {
   page: {
     minHeight: "100vh",

@@ -1,10 +1,23 @@
+// components/web/Footer.tsx
+
 import React from "react";
 
+/**
+ * Componente Footer
+ *
+ * Representa el pie de página del sitio web, dividido en:
+ * - Secciones informativas con enlaces útiles
+ * - Políticas legales
+ * - Íconos sociales
+ * - Botones para descarga de la app en tiendas móviles
+ */
 export default function Footer() {
   return (
     <footer style={styles.footer}>
       <div style={styles.container}>
+        {/* Secciones principales del footer */}
         <div style={styles.columns}>
+          {/* Columna 1: Empresa */}
           <div style={styles.column}>
             <h4 style={styles.title}>KCL Trading</h4>
             <a href="#" style={styles.link}>¿Quiénes somos?</a>
@@ -13,6 +26,8 @@ export default function Footer() {
             <a href="#" style={styles.link}>Prensa</a>
             <a href="#" style={styles.link}>Publicidad</a>
           </div>
+
+          {/* Columna 2: Descubre */}
           <div style={styles.column}>
             <h4 style={styles.title}>Descubre</h4>
             <a href="#" style={styles.link}>¿Cómo funciona?</a>
@@ -22,6 +37,8 @@ export default function Footer() {
             <a href="#" style={styles.link}>KCL Trading Pro</a>
             <a href="#" style={styles.link}>Guía de KCL Trading Pro</a>
           </div>
+
+          {/* Columna 3: Ayuda */}
           <div style={styles.column}>
             <h4 style={styles.title}>Ayuda</h4>
             <a href="#" style={styles.link}>Centro de Asistencia</a>
@@ -31,9 +48,12 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Separador visual */}
         <hr style={{ margin: "30px 0", borderColor: "#ddd" }} />
 
+        {/* Sección inferior: legales, redes, app stores */}
         <div style={styles.bottomRow}>
+          {/* Enlaces legales */}
           <div style={styles.links}>
             <a href="#" style={styles.link}>Política de Privacidad</a>
             <a href="#" style={styles.link}>Política de cookies</a>
@@ -42,6 +62,7 @@ export default function Footer() {
             <a href="#" style={styles.link}>Nuestra plataforma</a>
           </div>
 
+          {/* Íconos sociales */}
           <div style={styles.socials}>
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
               <img
@@ -66,6 +87,7 @@ export default function Footer() {
             </a>
           </div>
 
+          {/* Botones de descarga de apps */}
           <div style={styles.storeButtons}>
             <img
               src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
@@ -84,6 +106,7 @@ export default function Footer() {
   );
 }
 
+// ===================== ESTILOS =====================
 const styles: { [key: string]: React.CSSProperties } = {
   footer: {
     backgroundColor: "#fff",
