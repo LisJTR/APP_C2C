@@ -18,12 +18,15 @@ import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { uploadAvatar } from "@/utils/uploadAvatar";
 
+// Componente principal para editar el perfil del usuario
 export default function EditProfile() {
+    // Acceso al estado global de autenticación
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
   const setUser = useAuthStore((state) => state.setUser);
   const router = useRouter();
 
+    // Estado local del formulario de perfil
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -33,9 +36,11 @@ export default function EditProfile() {
     country_id: "",
   });
 
+  // Listas de países y ciudades
   const [countries, setCountries] = useState<{ id: number; name: string }[]>([]);
   const [cities, setCities] = useState<{ id: number; name: string }[]>([]);
 
+    // Inicializar datos de usuario y cargar países
   useEffect(() => {
     if (user) {
       setForm({
@@ -62,6 +67,7 @@ export default function EditProfile() {
     fetchCountries();
   }, [user]);
 
+    // Obtener ciudades al seleccionar país
   useEffect(() => {
     const fetchCities = async () => {
       if (!form.country_id) {
@@ -82,6 +88,7 @@ export default function EditProfile() {
     fetchCities();
   }, [form.country_id]);
 
+    // Función para seleccionar imagen (distinto en web vs móvil)
   const pickImage = async () => {
     if (Platform.OS === "web") {
       const input = document.createElement("input");
@@ -115,6 +122,7 @@ export default function EditProfile() {
     }
   };
 
+    // Enviar cambios al backend
   const handleUpdate = async () => {
     if (!token || !user || !user.id) {
   console.warn("⛔ Token o user.id no definido");
@@ -133,10 +141,13 @@ export default function EditProfile() {
     }
   };
 
+    // Render principal
   return (
     <ScrollView style={styles.page}>
       <HeaderLoggedIn onSearch={() => {}} />
+
       <View style={styles.container}>
+        {/* Menú lateral izquierdo */}
         <View style={styles.sidebar}>
           <Text style={styles.sidebarTitle}>Ajustes</Text>
           {[
@@ -155,9 +166,12 @@ export default function EditProfile() {
           ))}
         </View>
 
+{/* Contenido principal del formulario */}
         <View style={styles.mainContent}>
           <Text style={styles.title}>Ajustes</Text>
           <View style={styles.card}>
+
+{/* Sección para cambiar la foto */}
             <View style={styles.photoSection}>
               <Text style={styles.label}>Tu foto</Text>
               <Image
@@ -168,7 +182,7 @@ export default function EditProfile() {
                 <Text style={{ color: "#007AFF", marginTop: 8 }}>Elegir foto</Text>
               </TouchableOpacity>
             </View>
-
+{/* Biografía */}
             <View style={styles.section}>
               <Text style={styles.label}>Sobre mí</Text>
               <TextInput
@@ -181,6 +195,7 @@ export default function EditProfile() {
               />
             </View>
 
+            {/* País */}
             <View style={styles.section}>
               <Text style={styles.label}>País</Text>
               {Platform.OS === "web" ? (
@@ -212,6 +227,7 @@ export default function EditProfile() {
               )}
             </View>
 
+            {/* Ciudad */}
             <View style={styles.section}>
               <Text style={styles.label}>Ciudad</Text>
               {Platform.OS === "web" ? (
@@ -243,6 +259,7 @@ export default function EditProfile() {
               )}
             </View>
 
+            {/* Botón de actualización */}
             <View style={{ alignItems: "flex-end", marginTop: 16 }}>
               <TouchableOpacity style={styles.buttonSmall} onPress={handleUpdate}>
                 <Text style={styles.buttonText}>Actualizar perfil</Text>
@@ -256,6 +273,7 @@ export default function EditProfile() {
   );
 }
 
+// Estilos CSS-in-JS para los distintos elementos visuales
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#fff" },
   container: { flexDirection: "row", backgroundColor: "#fff", paddingHorizontal: 32, paddingTop: 32, paddingBottom: 60 },

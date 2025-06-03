@@ -133,17 +133,18 @@ export default function AuthModalWeb({
               </Text>
 
               {/* Botones sociales */}
-              <Pressable style={styles.socialBtn} onPress={() => googlePrompt()}>
-                <AntDesign name="google" size={18} color="#DB4437" />
-                <Text style={styles.socialText}>Continuar con Google</Text>
-              </Pressable>
+              <Pressable style={styles.socialBtn} disabled={true}>
+  <AntDesign name="google" size={18} color="#DB4437" />
+  <Text style={styles.socialText}>Continuar con Google</Text>
+</Pressable>
 
-              <Pressable style={styles.socialBtn} onPress={() => facebookPrompt()}>
-                <FontAwesome name="facebook" size={18} color="#1877F2" />
-                <Text style={[styles.socialText, { color: "#1877F2" }]}>
-                  Continuar con Facebook
-                </Text>
-              </Pressable>
+<Pressable style={styles.socialBtn} disabled={true}>
+  <FontAwesome name="facebook" size={18} color="#1877F2" />
+  <Text style={[styles.socialText, { color: "#1877F2" }]}>
+    Continuar con Facebook
+  </Text>
+</Pressable>
+
 
               <Text style={styles.separator}>O usa tu correo</Text>
 
@@ -213,6 +214,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     borderWidth: 1,
+    opacity: 0.5,
     borderColor: "#ddd",
     paddingVertical: 12,
     paddingHorizontal: 16,

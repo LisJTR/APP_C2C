@@ -1,4 +1,6 @@
 // components/HeaderLoggedIn.tsx
+
+// Este componente muestra el header superior para usuarios autenticados en la versión web. Incluye buscador, iconos, menú de perfil y navegación.
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -23,15 +25,19 @@ import { Platform as RNPlatform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { useAuthStore } from "@/store/useAuthStore";
 
+// Opciones del menú desplegable de búsqueda
 const MENU_OPTIONS = [
   { id: "articles", label: "Artículos" },
   { id: "members", label: "Miembros" },
   { id: "support", label: "Centro de asistencia" },
 ];
 
+// Componente principal
 export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string) => void }) {
   const pathname = usePathname();
   const router = useRouter();
+
+  // Estado para desplegables, búsqueda y referencias
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("articles");
   const ref = useRef<HTMLDivElement>(null);
@@ -41,15 +47,19 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [profileOpen, setProfileOpen] = useState(false);
    const handleUploadPress = () => {
-    router.push("./uploadProduct/UploadProducts");
+    router.push("/(webfrontend)/uploadProduct/UploadProducts");
   };
+
+  // Función para cerrar sesión
 const logout = useAuthStore((state) => state.logout);
 
+  // Cambiar opción seleccionada según la ruta
   useEffect(() => {
     if (pathname.startsWith("/members")) setSelected("members");
     else if (pathname.startsWith("/search")) setSelected("articles");
   }, [pathname]);
 
+    // Cerrar sesión y redirigir
   const handleLogout = async () => {
   await logout();
 
@@ -60,6 +70,7 @@ const logout = useAuthStore((state) => state.logout);
   }
 };
 
+  // Buscar sugerencias al escribir
   const fetchSuggestions = async (text: string) => {
     if (!text.trim()) return setSearchSuggestions([]);
 
@@ -77,6 +88,7 @@ const logout = useAuthStore((state) => state.logout);
     }
   };
 
+  // Al seleccionar sugerencia
   const handleSuggestionClick = (value: string) => {
     setSearchTerm(value);
     setSearchSuggestions([]);
@@ -87,6 +99,7 @@ const logout = useAuthStore((state) => state.logout);
     });
   };
 
+    // Al enviar búsqueda
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSearch(searchTerm);
@@ -96,6 +109,7 @@ const logout = useAuthStore((state) => state.logout);
     });
   };
 
+    // Cierra menús si haces clic fuera
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -105,6 +119,7 @@ const logout = useAuthStore((state) => state.logout);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+    // Abre/cierra menú de categorías
   const toggleMenu = () => {
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect();
@@ -213,6 +228,13 @@ const logout = useAuthStore((state) => state.logout);
     </>
   );
 }
+
+  // Resto del componente y JSX (ver versión previa completa)
+  // Incluye logo, búsqueda, sugerencias, iconos, menú de perfil y navegación inferior
+
+  // Estilos se mantienen como en tu versión, ya definidos con StyleSheet
+  // También los estilos dinámicos inyectados en el DOM para hover y menús
+
 
 const styles = StyleSheet.create({
   topBar: {

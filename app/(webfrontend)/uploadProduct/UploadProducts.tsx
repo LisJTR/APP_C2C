@@ -1,3 +1,4 @@
+// Componente para subir productos en la versión web de la app
 import { useState } from "react";
 import {
   ScrollView,
@@ -17,14 +18,17 @@ import axios from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function UploadProduct() {
+    // Estados para los campos del formulario
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [images, setImages] = useState<File[]>([]);
+
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
     
+      // Función para abrir el selector de imágenes (solo web)
   const handleImageUpload = () => {
     const input = document.createElement("input");
     input.type = "file";
@@ -41,12 +45,14 @@ export default function UploadProduct() {
     input.click();
   };
 
+  // Eliminar imagen seleccionada
   const handleRemove = (index: number) => {
     const updated = [...images];
     updated.splice(index, 1);
     setImages(updated);
   };
 
+// Lógica principal para enviar el producto al backend
 const handleSubmit = async () => {
   if (!title || !description || !category || !price || images.length === 0) {
     alert("Por favor, rellena todos los campos y sube al menos una imagen.");
@@ -61,6 +67,7 @@ const handleSubmit = async () => {
   try {
     const imageUrls: string[] = [];
 
+    // Subir una por una las imágenes y guardar sus URLs
     for (const file of images) {
       const formData = new FormData();
       formData.append("image", file);
@@ -73,6 +80,7 @@ const handleSubmit = async () => {
       imageUrls.push(imageUrl);
     }
 
+// Enviar datos del producto al backend
     await axios.post("http://localhost:5000/api/products", {
       user_id: user.id,
       title,
@@ -90,7 +98,7 @@ const handleSubmit = async () => {
   }
 };
 
-
+  // Renderizado principal del formulario
   return (
     <ScrollView style={{ backgroundColor: "#f3f4f6", minHeight: Dimensions.get("window").height }}>
       <HeaderLoggedIn onSearch={() => {}} />
@@ -109,7 +117,7 @@ const handleSubmit = async () => {
           Subir artículo
         </Text>
 
-        {/* Imagenes */}
+        {/* Zona de Imagenes */}
         <View
           style={{
             borderWidth: 2,
@@ -126,6 +134,7 @@ const handleSubmit = async () => {
             marginBottom: 20,
           }}
         >
+          {/* Estado vacío: botón para subir */}
           {images.length === 0 ? (
             <TouchableOpacity onPress={handleImageUpload}>
               <Text style={{ color: "#007AFF", fontWeight: "500" }}>
@@ -133,6 +142,7 @@ const handleSubmit = async () => {
               </Text>
             </TouchableOpacity>
           ) : (
+// Imágenes miniatura con opción de eliminar
             <>
               {images.map((img, idx) => (
                 <View
@@ -187,7 +197,7 @@ const handleSubmit = async () => {
           )}
         </View>
 
-        {/* Formulario */}
+        {/* Formulario de entrada*/}
         <Text style={styles.label}>Título</Text>
         <TextInput
           style={styles.input}
@@ -208,6 +218,7 @@ const handleSubmit = async () => {
         />
 
         <Text style={styles.label}>Categoría</Text>
+        {/* Web: uso de <select> en vez de TextInput */}
         {Platform.OS === "web" ? (
           <select
             value={category}
@@ -247,6 +258,7 @@ const handleSubmit = async () => {
           keyboardType="numeric"
         />
 
+{/* Botón de envío */}
         <View
           style={{
             flexDirection: "row",
@@ -265,6 +277,7 @@ const handleSubmit = async () => {
   );
 }
 
+// Estilos comunes del formulario
 const styles = {
   label: {
     fontSize: 14,

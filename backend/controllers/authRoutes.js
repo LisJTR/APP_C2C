@@ -194,7 +194,25 @@ router.post("/verify-code", async (req, res) => {
     // Podrías actualizar un campo "is_verified" si lo tienes
     await pool.query("UPDATE users SET is_verified = true WHERE email = $1", [email]);
 
-    res.json({ message: "Código verificado correctamente" });
+const userResult = await pool.query(
+  `SELECT id, username, email FROM users WHERE email = $1`,
+  [email]
+);
+
+const user = userResult.rows[0];
+
+const token = jwt.sign(
+  { id: user.id, email: user.email },
+  process.env.JWT_SECRET,
+  { expiresIn: "1h" }
+);
+
+res.json({
+  message: "Código verificado correctamente",
+  token,
+  user,
+});
+
   } catch (error) {
     console.error("Error verificando código:", error);
     res.status(500).json({ message: "Error en la verificación" });

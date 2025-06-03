@@ -7,6 +7,8 @@ import { getUserProfile } from "@/api/api";
 import { CheckCircle, MapPin, Clock, Users, Mail, ShieldCheck, Globe } from "lucide-react";
 import { useRouter } from "expo-router";
 
+// Tipo para representar un producto del usuario
+// usado en la sección de "Anuncios"
 type Product = {
   id: number;
   title: string;
@@ -15,16 +17,21 @@ type Product = {
 };
 
 export default function ProfilePage() {
+  // Estado global desde Zustand
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const token = useAuthStore((state) => state.token);
   const router = useRouter();
+
+    // Estado local para almacenar los productos del usuario
   const [myProducts, setMyProducts] = useState<Product[]>([]);
 
+    // Navegación a la página de subida de producto
   const handleUploadPress = () => {
     router.push("/(webfrontend)/uploadProduct/UploadProducts");
   };
 
+    // useEffect para cargar el perfil del usuario desde el backend
   useEffect(() => {
     const fetchUser = async () => {
       if (token) {
@@ -37,6 +44,7 @@ export default function ProfilePage() {
     fetchUser();
   }, [token, setUser]);
 
+    // useEffect para cargar los productos del usuario desde el backend
   useEffect(() => {
     const fetchUserProducts = async () => {
       if (user?.id) {
@@ -54,9 +62,11 @@ export default function ProfilePage() {
 
   return (
     <ScrollView style={styles.page}>
+       {/* Header visible si el usuario ha iniciado sesión */}
       <HeaderLoggedIn onSearch={() => {}} />
 
       <View style={styles.container}>
+  {/* Sección superior: avatar, nombre y botón para editar */}
         <View style={styles.topSection}>
           <Image
             source={{ uri: user?.avatar_url || "https://i.imgur.com/KoJ8KNe.png" }}
@@ -73,12 +83,14 @@ export default function ProfilePage() {
           </TouchableOpacity>
         </View>
 
+        {/* Bio del usuario si existe */}
         {user?.bio ? (
           <View style={styles.bioSection}>
             <Text style={styles.bioText}>{user.bio}</Text>
           </View>
         ) : null}
 
+        {/* Información adicional del perfil */}
         <View style={styles.infoSection}>
           <View style={styles.column}>
             <Text><MapPin size={14} /> {user?.location || ""}</Text>
@@ -96,14 +108,17 @@ export default function ProfilePage() {
           </View>
         </View>
 
+        {/* Tabs de navegación del perfil (actualmente sólo 'Anuncios') */}
         <View style={styles.tabs}>
           <Text style={[styles.tabItem, styles.activeTab]}>Anuncios</Text>
         </View>
 
+        {/* Sección de productos publicados por el usuario */}
         <View style={styles.adsSection}>
           <Text style={styles.badge}>Empieza una nueva racha de anuncios</Text>
           <Text style={styles.tip}>Sube 5 artículos en 30 días para ganar la insignia de vendedor frecuente</Text>
 
+          {/* Vista si no hay productos */}
           {myProducts.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyTitle}>Sube artículos para empezar a vender</Text>
@@ -113,6 +128,7 @@ export default function ProfilePage() {
               </TouchableOpacity>
             </View>
           ) : (
+        // Muestra la lista de productos del usuario
             <View style={{ marginTop: 24, flexDirection: "row", flexWrap: "wrap", gap: 16 }}>
               {myProducts.map((product) => (
                 <View
@@ -149,11 +165,13 @@ export default function ProfilePage() {
         </View>
       </View>
 
+      {/* Footer global de la web */}
       <Footer />
     </ScrollView>
   );
 }
 
+// Estilos del componente
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#fff" },
   container: { padding: 24 },

@@ -25,40 +25,42 @@ export default function EmailVerification({ email }: { email: string }) {
   const router = useRouter();
 
   // Verifica el código ingresado
-  const handleVerify = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/verify-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
+const handleVerify = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/verify-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // 🧠 Guardar token en sessionStorage (opcional para web)
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("token", data.token);
+      }
+
+      // ✅ Guardar sesión en Zustand
+      const login = useAuthStore.getState().login;
+      await login(data.token, {
+        id: data.user.id,
+        username: data.user.username,
+        email: data.user.email,
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        // 🧠 Guardar token en sessionStorage (solo si hay ventana disponible)
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem("token", data.token);
-        }
-
-        // ✅ Actualizar estado global con el login
-        const login = useAuthStore.getState().login;
-        login(data.token, {
-          id: data.user.id,
-          username: data.user.username,
-          email: data.user.email,
-        });
-
-        // ✅ Redirige a la pantalla principal
-        router.replace("/");
-      } else {
-        alert(data.message || "Código incorrecto");
-      }
-    } catch (err) {
-      alert("Error al verificar el código");
-      console.error(err);
+      // 🕒 Esperamos un poco para que Zustand cargue el estado
+      setTimeout(() => {
+        router.replace("/"); // Redirige a index.tsx
+      }, 300);
+    } else {
+      alert(data.message || "Código incorrecto");
     }
-  };
+  } catch (err) {
+    alert("Error al verificar el código");
+    console.error(err);
+  }
+};
 
   // Reenvía el código de verificación
   const handleResend = async () => {
