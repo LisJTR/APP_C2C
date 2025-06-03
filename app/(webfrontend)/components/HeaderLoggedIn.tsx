@@ -41,7 +41,7 @@ export default function HeaderLoggedIn({ onSearch }: { onSearch: (query: string)
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [profileOpen, setProfileOpen] = useState(false);
    const handleUploadPress = () => {
-    router.push("/(webfrontend)/uploadProduct/UploadProducts");
+    router.push("./uploadProduct/UploadProducts");
   };
 const logout = useAuthStore((state) => state.logout);
 

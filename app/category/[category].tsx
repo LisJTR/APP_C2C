@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 import { Image } from "react-native";
 import { API_BASE_URL } from "@/utils/config"; // Usa esto
 import { Product } from "@/types/Product";
+import { useRouter } from "expo-router"; 
+
 
 
 const sizeOptions = ["XS", "S", "M", "L", "XL"];
@@ -25,6 +27,7 @@ export default function CategoryScreen() {
 
   const { t } = useTranslation();
   const navigation = useNavigation();
+  const router = useRouter();
 
   useLayoutEffect(() => {
     if (category) {
@@ -148,24 +151,26 @@ export default function CategoryScreen() {
 
       {/* Productos */}
       <FlatList
-        data={filteredProducts}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            {item.image_url && (
-              <Image source={{ uri: item.image_url }} style={styles.productImage} />
-            )}
-            <Text style={styles.name}>{item.title}</Text>
-            <Text>{item.price} €</Text>
-            <Text>{item.size}</Text>
-            <Text>{item.condition}</Text>
-          </View>
+          data={filteredProducts}
+  keyExtractor={(item) => item.id.toString()}
+  renderItem={({ item }) => (
+    <TouchableOpacity onPress={() => router.push(`/product/${item.id}`)}>
+      <View style={styles.card}>
+        {item.image_url && (
+          <Image source={{ uri: item.image_url }} style={styles.productImage} />
         )}
-        ListEmptyComponent={
-          <Text style={{ textAlign: "center", color: "#888", marginTop: 20 }}>
-            {t("category.empty")}
-          </Text>
-        }
+        <Text style={styles.name}>{item.title}</Text>
+        <Text>{item.price} €</Text>
+        <Text>{item.size}</Text>
+        <Text>{item.condition}</Text>
+      </View>
+    </TouchableOpacity>
+  )}
+  ListEmptyComponent={
+    <Text style={{ textAlign: "center", color: "#888", marginTop: 20 }}>
+      {t("category.empty")}
+    </Text>
+  }
       />
     </View>
   );
@@ -234,10 +239,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   productImage: {
-    width: "100%",
-    height: 180,
-    borderRadius: 10,
-    marginBottom: 10,
-    resizeMode: "cover",
+     width: "100%",
+    aspectRatio: 1,
+    resizeMode: "contain",
+    borderRadius: 8,
+    marginBottom: 8,
   },
 });
