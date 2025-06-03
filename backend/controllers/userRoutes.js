@@ -1,4 +1,7 @@
 // backend/controllers/userRoutes.js
+// Este módulo define las rutas relacionadas con la gestión de usuarios en la aplicación:
+// incluye obtención de países/ciudades, búsqueda, perfil del usuario autenticado, actualización,
+// eliminación de cuenta, y visualización pública del perfil y productos de otros usuarios.
 import express from "express";
 import { body, validationResult } from "express-validator";
 import pool from "../config/db.js";
@@ -6,12 +9,13 @@ import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
+// Validaciones opcionales que se aplicarán si los campos están presentes en la solicitud de actualización
 const validateUpdate = [
   body("username").optional().notEmpty().withMessage("El nombre de usuario no puede estar vacío"),
   body("email").optional().isEmail().withMessage("Debe proporcionar un email válido"),
 ];
 
-// ✅ Rutas específicas primero
+// Ruta pública que devuelve la lista de países disponibles, ordenados alfabéticamente
 router.get("/countries", async (req, res) => {
   try {
     const result = await pool.query("SELECT id, name FROM countries ORDER BY name ASC");
@@ -22,6 +26,7 @@ router.get("/countries", async (req, res) => {
   }
 });
 
+// Ruta pública que devuelve todas las ciudades asociadas a un país específico
 router.get("/cities/:countryId", async (req, res) => {
   const { countryId } = req.params;
   try {
@@ -36,7 +41,7 @@ router.get("/cities/:countryId", async (req, res) => {
   }
 });
 
-// ✅ Luego rutas como /search o /suggestions
+// Ruta de búsqueda que devuelve usuarios verificados cuyo nombre de usuario coincide parcialmente con la consulta
 router.get("/search", async (req, res) => {
   const { query } = req.query;
   try {
@@ -52,6 +57,7 @@ router.get("/search", async (req, res) => {
   }
 });
 
+// Ruta para autocompletado o sugerencias rápidas de nombre de usuario (hasta 5 coincidencias)
 router.get("/suggestions", async (req, res) => {
   const query = req.query.query?.toLowerCase();
   if (!query) return res.json([]);
@@ -67,7 +73,9 @@ router.get("/suggestions", async (req, res) => {
   }
 });
 
-// ✅ Luego rutas protegidas
+
+// Ruta protegida que permite al usuario autenticado obtener todos los datos de su propio perfil,
+// incluyendo información adicional como país de residencia si está asociado.
 router.get("/profile", authMiddleware, async (req, res) => {
   try {
     const user = await pool.query(
@@ -89,6 +97,8 @@ router.get("/profile", authMiddleware, async (req, res) => {
   }
 });
 
+// Ruta protegida que permite al usuario autenticado actualizar campos de su perfil.
+// Solo se modifican los campos que el usuario haya enviado explícitamente (gracias a COALESCE).
 router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -103,7 +113,7 @@ router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
     }
 
     console.log("🧠 Avatar URL recibido:", avatar_url?.substring(0, 100));
-
+    // Se actualiza el perfil y se devuelve el nuevo estado del usuario
     const updatedUser = await pool.query(
       `UPDATE users 
        SET 
@@ -125,6 +135,7 @@ router.put("/update", authMiddleware, validateUpdate, async (req, res) => {
   }
 });
 
+// Ruta protegida para eliminar la cuenta del usuario autenticado
 router.delete("/delete", authMiddleware, async (req, res) => {
   try {
     const userExists = await pool.query("SELECT * FROM users WHERE id = $1", [req.user.id]);
@@ -139,7 +150,8 @@ router.delete("/delete", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Finalmente, rutas dinámicas con :id
+// Ruta pública que muestra los productos publicados por un usuario específico.
+// Cada producto se acompaña de su imagen destacada (primera imagen asociada).
 router.get("/:id/products", async (req, res) => {
   const { id } = req.params;
   try {
@@ -154,6 +166,7 @@ router.get("/:id/products", async (req, res) => {
   }
 });
 
+// Ruta pública para obtener información básica de un usuario por su ID, visible desde perfiles ajenos
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -171,4 +184,4 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-export default router;
+export default router; // Exportamos el router para integrarlo en la app principal

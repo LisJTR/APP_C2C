@@ -8,11 +8,12 @@ import { sendVerificationEmail } from "../utils/emailService.js";
 import crypto from "crypto";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
-
+ // Crear un nuevo enrutador
 const router = express.Router();
 const verificationCode = crypto.randomBytes(3).toString("hex").toUpperCase(); // Ej: "3F6A9B"
+// Genera un código aleatorio de verificación de 6 caracteres hexadecimales (ej: "3F6A9B")
 
-
+// Ruta POST para registrar un nuevo usuario
 // Registro
 router.post(
   "/register",
@@ -22,22 +23,24 @@ router.post(
     body("password").isLength({ min: 6 }).withMessage("La contraseña debe tener al menos 6 caracteres"),
   ],
   async (req, res) => {
+     // Comprobamos si las validaciones han fallado
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
+// Desestructuramos los datos enviados en el cuerpo
     const { username, email, password, location, bio, country_id } = req.body;
 
     try {
+      // Verificamos si el correo ya está registrado
       const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
       if (userExists.rows.length > 0) {
         return res.status(400).json({ message: "El usuario ya está registrado" });
       }
-
+ // Encriptamos la contraseña
       const salt = await bcrypt.genSalt(12);
       const hashedPassword = await bcrypt.hash(password, salt);
-
+// Insertamos el nuevo usuario en la base de datos
       const newUser = await pool.query(
   `INSERT INTO users (username, email, password, verification_code, location, bio, country_id)
    VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -45,7 +48,7 @@ router.post(
   [username, email, hashedPassword, verificationCode, location || null, bio || null, country_id || null]
 );      
 
-      // Enviar correo
+       // Enviamos correo de verificación con el código generado
     await sendVerificationEmail(email, verificationCode);
 
       res.status(201).json({ message: "Usuario registrado exitosamente", user: newUser.rows[0] });
@@ -56,11 +59,12 @@ router.post(
   }
 );
 
-// Inicio de sesión
+// Ruta POST para iniciar sesión
 router.post("/login", async (req, res) => {
   const { identifier, password } = req.body;
 
   try {
+     // Buscar usuario por email o username
     console.log("🟡 Intento login:", identifier, password);
 
     const user = await pool.query(
@@ -69,20 +73,20 @@ router.post("/login", async (req, res) => {
     if (user.rows.length === 0) {
       return res.status(400).json({ message: "Email, usuario o contraseña incorrectos" });
     }
-
+ // Comparamos contraseñas con bcrypt
     const validPassword = await bcrypt.compare(password, user.rows[0].password);
     console.log("🔑 ¿Contraseña válida?:", validPassword);
     if (!validPassword) {
       return res.status(400).json({ message: "Email, usuario o contraseña incorrectos" });
     }
-
+// Generamos token JWT válido por 1 hora
     const token = jwt.sign(
       { id: user.rows[0].id, email: user.rows[0].email },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    //Devuelve el usuario en la respuesta
+   // Enviamos token + datos del usuario
     res.json({
       message: "Inicio de sesión exitoso",
       token,
@@ -108,7 +112,7 @@ router.post("/login", async (req, res) => {
 
 });
 
-// Login con Google
+// Ruta POST para login con Google OAuth2
 router.post("/google", async (req, res) => {
   const { access_token } = req.body;
 
@@ -165,7 +169,7 @@ router.post("/google", async (req, res) => {
   }
 });
 
-// Verificación del código enviado por correo
+// Ruta POST para verificar código de verificación recibido por email
 router.post("/verify-code", async (req, res) => {
   const { email, code } = req.body;
 
@@ -197,21 +201,26 @@ router.post("/verify-code", async (req, res) => {
   }
 });
 
+// Ruta POST para reenviar el código de verificación por email
 router.post("/resend-code", async (req, res) => {
   const { email } = req.body;
 
+   // Validamos formato del correo
   if (!email || !/\S+@\S+\.\S+/.test(email)) {
     return res.status(400).json({ message: "Correo inválido" });
   }
 
   try {
+    // Generar nuevo código
     const code = crypto.randomBytes(3).toString("hex").toUpperCase();
 
+    // Verificar si el usuario existe
     const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     if (user.rows.length === 0) {
       return res.status(404).json({ message: "No se encontró un usuario con ese correo" });
     }
 
+      // Guardar el nuevo código en la base de datos
     await pool.query("UPDATE users SET verification_code = $1 WHERE email = $2", [code, email]);
 
     await sendVerificationEmail(email, code);
@@ -223,4 +232,4 @@ router.post("/resend-code", async (req, res) => {
   }
 });
 
-export default router;
+export default router;  // Se exporta para ser usado desde app.js o server.js
