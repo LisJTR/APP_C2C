@@ -1,51 +1,122 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
-import { useNavigation } from "expo-router";
-
-const categories = [
-  { id: "1", name: "👕 Ropa", screen: "ropa" },
-  { id: "2", name: "👟 Zapatos", screen: "zapatos" },
-  { id: "3", name: "🎒 Accesorios", screen: "accesorios" },
-  { id: "4", name: "📱 Electrónica", screen: "electronica" },
-  { id: "5", name: "🏠 Hogar", screen: "hogar" },
-  { id: "6", name: "🐶 Mascotas", screen: "mascotas" },
-  { id: "7", name: "🙍 Mujer", screen: "mujer" },
-  { id: "8", name: "🙍‍♂️ Hombre", screen: "hombre" },
-  { id: "9", name: "👶 Niños", screen: "ninos" },
-];
+import React, { useState, useEffect } from "react";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native";
+import { useTranslation } from "react-i18next";
+import { useRouter } from "expo-router";
+import { ALL_CATEGORIES } from "@/constants/categories";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export default function ExploreScreen() {
-  const navigation = useNavigation();
+  const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+  const { user, invitado } = useAuthStore();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+
+   // Debug de control cuando entra en esta pantalla (solo para desarrollo
+  useEffect(() => {
+    console.log(" ExploreScreen");
+    console.log("user:", user);
+    console.log(" invitado:", invitado);
+  }, []);
+
+   // Comprobamos si está entrando como invitado (para mostrar el modal)
+    useEffect(() => {
+  let isMounted = true;
+
+  if (!user && invitado) {
+    setTimeout(() => {
+      if (isMounted) {
+        setShowAccessModal(true); // Mostrar modal en lugar de redirigir
+      }
+    }, 0);
+  }
+
+  return () => {
+    isMounted = false; // Evita que el alert y router se disparen si ya cambiaste de pantalla
+  };
+}, []);
+
+    // Filtrado de categorías en función del texto de búsqueda
+  const categories = ALL_CATEGORIES.filter((item) =>
+    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Explorar Categorías</Text>
+      {/* Input de búsqueda */}
+      <TextInput
+        style={styles.searchInput}
+        placeholder={t("explore.searchPlaceholder")}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+      {/* Título superior */}
+      <Text style={styles.title}>{t("explore.title")}</Text>
+      {/* Listado de categorías filtradas */}
       <FlatList
         data={categories}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.key}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.categoryButton}
-            onPress={() => alert(`Navegando a ${item.name}`)} // Aquí se conecta con la pantalla correspondiente
+            onPress={() =>
+              router.push({ pathname: "/category/[category]", params: { category: item.key } })
+            }
+
           >
-            <Text style={styles.categoryText}>{item.name}</Text>
+            <Text style={styles.categoryText}>{item.label}</Text>
           </TouchableOpacity>
         )}
+
       />
+
+       {/* Modal de acceso restringido para invitados */}
+      {showAccessModal && (
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Acceso restringido</Text>
+          <Text style={styles.modalText}>
+            Debes registrarte o iniciar sesión para continuar.
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setShowAccessModal(false);
+              useAuthStore.getState().setInvitado(false);
+              router.replace("/screens/WelcomeScreenMobile");
+            }}
+          >
+            <Text style={styles.modalLink}>Registrate ahora</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )}
+
+
     </View>
+    
   );
+  
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingTop: 60,
+    paddingHorizontal: 20,
     backgroundColor: "#fff",
+  },
+  searchInput: {
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 10,
     textAlign: "center",
   },
   categoryButton: {
@@ -59,4 +130,36 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "500",
   },
+  modalOverlay: {
+  position: "absolute",
+  top: 0, left: 0, right: 0, bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 1000,
+},
+modalContainer: {
+  backgroundColor: "#fff",
+  padding: 20,
+  borderRadius: 10,
+  alignItems: "center",
+  width: "80%",
+},
+modalTitle: {
+  fontSize: 18,
+  fontWeight: "bold",
+  marginBottom: 10,
+},
+modalText: {
+  fontSize: 16,
+  textAlign: "center",
+  marginBottom: 10,
+},
+modalLink: {
+  color: "#2F70AF",
+  fontWeight: "bold",
+  textDecorationLine: "underline",
+  fontSize: 16,
+},
+
 });

@@ -1,53 +1,67 @@
-import { Stack, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
-import * as SecureStore from "expo-secure-store";
-import { useAuthStore } from "../store/useAuthStore";
+// app/_layout.tsx
+import { Stack, useRouter, useRootNavigationState, useSegments } from "expo-router";
+import { GestureHandlerRootView } from 'react-native-gesture-handler'; 
+import { StyleSheet } from "react-native";
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_600SemiBold,
+} from "@expo-google-fonts/poppins";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/useAuthStore";
+
+// Muestra la pantalla de carga hasta que se carguen las fuentes
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_600SemiBold,
+  });
+
+  const { user, invitado } = useAuthStore();
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const login = useAuthStore((state) => state.login);
+  const segments = useSegments();
+  const rootNavigation = useRootNavigationState();
 
-  // 🔹 Cargar sesión desde SecureStore
-  useEffect(() => {
-    const loadSession = async () => {
-      try {
-        const storedToken = await SecureStore.getItemAsync("userToken");
-        setToken(storedToken ?? null);
-      } catch (error) {
-        console.error("Error cargando el token:", error);
-        setToken(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadSession();
-  }, []);
+   useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
 
-  // 🔹 Redirigir a la pantalla de autenticación si el usuario no ha iniciado sesión
-  useEffect(() => {
-    if (!loading && !token) {
-      router.replace("/auth"); // Redirige a la pantalla de autenticación
+  //  Redirige solo si está logueado (NO invitado) y está en Welcome
+   useEffect(() => {
+    if (!rootNavigation?.key) return;
+
+     const estaEnWelcome = segments.join("/").includes("welcome");
+
+    // Solo redirige si está logueado, no como invitado, y está en pantalla Welcome
+    if (user && !invitado && estaEnWelcome) {
+      router.replace("/(tabs)/home");
     }
-  }, [loading, token]);
+  }, [rootNavigation?.key, user, invitado, segments]);
 
-  // 🔹 Mostrar pantalla de carga mientras se verifica la sesión
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
-    );
-  }
+  if (!fontsLoaded) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {/* ✅ Si el usuario no ha iniciado sesión, se le redirige a "/auth" */}
-      <Stack.Screen name="auth/index" options={{ headerShown: false }} />
-      {/* ✅ Si el usuario ha iniciado sesión, se muestra la navegación principal */}
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <GestureHandlerRootView style={styles.container}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/index" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="screens/WelcomeScreenMobile" options={{ headerShown: false, gestureEnabled: false }} />
+      </Stack>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

@@ -12,9 +12,13 @@ import {
 } from "react-native";
 import { useAuthStore } from "../../store/useAuthStore";
 import { loginUser, registerUser } from "../../api/api";
+import { useTranslation } from "react-i18next";
+
+
 
 export default function AuthScreen() {
   const router = useRouter();
+  // Estados locales del formulario
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -22,11 +26,12 @@ export default function AuthScreen() {
   const [isLoginView, setIsLoginView] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const login = useAuthStore((state) => state.login);
+  const { t } = useTranslation();
 
-  // 🔹 Manejo de inicio de sesión
+  //  Manejo de inicio de sesión
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
+      Alert.alert("Error", t("auth.requiredFields"));
       return;
     }
 
@@ -36,22 +41,22 @@ export default function AuthScreen() {
 
     if (result.token && result.user) {
       login(result.token, result.user);
-      Alert.alert("Inicio de sesión exitoso");
-      router.replace("/(tabs)"); // Redirige al usuario a la app
+      Alert.alert(t("auth.loginSuccess"));
+      router.replace("./tabs"); // Redirige al usuario a la app
     } else {
-      Alert.alert("Error", result.message || "Credenciales incorrectas.");
+      Alert.alert("Error", result.message || t("auth.loginError"));
     }
   };
 
-  // 🔹 Manejo de registro
+  //  Manejo de registro
   const handleRegister = async () => {
     if (!username || !email || !password) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
+      Alert.alert("Error", t("auth.requiredFields"));
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres.");
+      Alert.alert("Error",  t("auth.shortPassword"));
       return;
     }
 
@@ -60,26 +65,26 @@ export default function AuthScreen() {
     setIsLoading(false);
 
     if (result.user) {
-      Alert.alert("Registro exitoso", "Ahora puedes iniciar sesión.");
+      Alert.alert( t("auth.registerSuccess"), t("auth.messageSuccess"));
       setIsLoginView(true);
       setError(null);
     } else {
-      Alert.alert("Error", result.message || "No se pudo registrar.");
+      Alert.alert("Error", result.message || t("auth.registerError"));
     }
   };
 
-  // 🔹 Permitir que el usuario entre sin cuenta
+  //  Permitir que el usuario entre sin cuenta
   const handleSkip = () => {
-    router.replace("/(tabs)");
+    router.replace("./(tabs)");
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{isLoginView ? "Iniciar Sesión" : "Registro"}</Text>
+      <Text style={styles.title}>{isLoginView ? t("auth.login") : t("auth.register")}</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Correo electrónico"
+        placeholder= {t("auth.email")}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -87,7 +92,7 @@ export default function AuthScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="Contraseña"
+        placeholder= {t("auth.password")}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -96,7 +101,7 @@ export default function AuthScreen() {
       {!isLoginView && (
         <TextInput
           style={styles.input}
-          placeholder="Nombre de usuario"
+          placeholder= {t("auth.username")}
           value={username}
           onChangeText={setUsername}
         />
@@ -108,24 +113,24 @@ export default function AuthScreen() {
         <ActivityIndicator size="large" color="#007AFF" />
       ) : (
         <Pressable style={styles.button} onPress={isLoginView ? handleLogin : handleRegister}>
-          <Text style={styles.buttonText}>{isLoginView ? "Iniciar Sesión" : "Registrarse"}</Text>
+          <Text style={styles.buttonText}>{isLoginView ? t("auth.login") : t("auth.register") }</Text>
         </Pressable>
       )}
 
       <Pressable onPress={handleSkip} style={styles.skipButton}>
-        <Text style={styles.skipButtonText}>Saltar</Text>
+        <Text style={styles.skipButtonText}>{t("auth.skip")}</Text>
       </Pressable>
 
       <Pressable onPress={() => setIsLoginView(!isLoginView)}>
         <Text style={styles.switchText}>
-          {isLoginView ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
+          {isLoginView ? t("auth.noAccount") : t("auth.haveAccount")}
         </Text>
       </Pressable>
     </View>
   );
 }
 
-// 📌 **ESTILOS**
+//  **ESTILOS**
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#F5F5F5" },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },

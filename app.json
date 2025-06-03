@@ -1,28 +1,43 @@
 {
   "expo": {
-    "name": "mi-app-vinted",
-    "slug": "mi-app-vinted",
+    "name": "APP_C2C",
+    "slug": "APP_C2C",
+    "owner": "kcl_trading",
     "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "icon": "./assets/images/logo.png",
+    "scheme": "com.anonymous.miappvinted",
     "userInterfaceStyle": "automatic",
     "jsEngine": "hermes",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundlerIdentifier": "com.anonymous.miappvinted",
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.miappvinted"
+      "package": "com.anonymous.miappvinted",
+      "runtimeVersion": "1.0.0",
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ]
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logo.png"
     },
     "plugins": [
       "expo-router",
@@ -34,10 +49,23 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-localization",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "5433d856-8a74-4abc-9fe7-8776bb1aa121"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5433d856-8a74-4abc-9fe7-8776bb1aa121"
     }
   }
 }

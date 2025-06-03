@@ -2,17 +2,23 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "allowJs": true,  // ✅ Permite archivos JavaScript junto con TypeScript
+    "allowJs": true,
+    "jsx": "react-native",             // ✅ Asegura compatibilidad con JSX en RN
+    "target": "ES2020",                // ✅ Recomendado por Expo
+    "lib": ["DOM", "ES2020"],          // ✅ Compatible con Web y RN
+    "skipLibCheck": true,              // ✅ Evita errores en dependencias de terceros
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "types": ["jest", "react-native"]  // ✅ Asegura que tipos como useEffect estén disponibles
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "**/*.js",       // ✅ Asegura que los archivos .js sean reconocidos
+    "**/*.js",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]
