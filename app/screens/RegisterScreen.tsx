@@ -36,7 +36,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
   opacity: iconScale.value,
 }));
 
-
+  // Validación de campos
   const validateUsername = (value: string) => {
     setUsername(value);
     if (!value.trim()) {
@@ -71,7 +71,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
       setPasswordError("");
     }
   };
-
+  // Envío del formulario
   const handleRegister = async () => {
     validateUsername(username);
     validateEmail(email);
@@ -84,8 +84,9 @@ const animatedIconStyle = useAnimatedStyle(() => ({
     setIsLoading(false);
 
     if (result.user) {
+      // Redirige a verificación de email tras registrar
       router.replace(`/email-verification/${encodeURIComponent(email)}`);
-      console.log("🧪 Email recibido:", email);
+      console.log(" Email recibido:", email);
     } else {
       alert(result.message || t("registerScreen.registerError"));
     }
@@ -93,7 +94,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      {/* 🔙 Flecha de retroceso */}
+      {/* Flecha de retroceso */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
       <Ionicons name="arrow-back" size={22} color="#555" />
       </TouchableOpacity>

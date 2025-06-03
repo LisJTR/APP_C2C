@@ -16,6 +16,7 @@ export default function IndexRedirect() {
     const redirect = async () => {
       const token = await getToken("userToken");
 
+      // Si no hay token => usuario NO logueado
       if (!token) {
         if (Platform.OS === "web") {
           router.replace("./welcome");
@@ -23,6 +24,7 @@ export default function IndexRedirect() {
           router.replace("/screens/WelcomeScreenMobile");
         }
       } else {
+        // Si hay token => usuario logueado, lo mandamos al home principal
         router.replace("./(tabs)");
       }
     };

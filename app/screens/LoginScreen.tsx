@@ -30,7 +30,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-
+    // Validación de campos
   const validateFields = () => {
     let valid = true;
     if (!emailOrUser.trim()) {
@@ -52,7 +52,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
 
     return valid;
   };
-
+    // Función de login
   const handleLogin = async () => {
     if (!validateFields()) return;
 
@@ -70,7 +70,7 @@ const animatedIconStyle = useAnimatedStyle(() => ({
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      {/* 🔙 Flecha de retroceso */}
+      {/* Flecha de retroceso */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <Ionicons name="arrow-back" size={24} color="#000" />
       </TouchableOpacity>
@@ -158,8 +158,8 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     paddingVertical: 12,
     marginBottom: 5,
-    color: "#000", // 👈 importante
-    backgroundColor: "#fff", // 👈 si usas fondo claro
+    color: "#000", 
+    backgroundColor: "#fff", 
   },
   passwordContainer: {
     flexDirection: "row",
@@ -171,8 +171,8 @@ const styles = StyleSheet.create({
   passwordInput: {
     flex: 1,
     paddingVertical: 12,
-    color: "#000", // 👈 importante
-  backgroundColor: "#fff", // 👈 importante
+    color: "#000", 
+  backgroundColor: "#fff", 
   borderWidth: 0,
   },
   errorText: {

@@ -50,15 +50,15 @@ export default function WelcomeScreenMobile() {
     console.log("user:", user);
     console.log(" invitado:", invitado);
 
-     // ✅ Si el usuario NO está logueado pero venía como invitado, limpiamos invitado
+     //  Si el usuario NO está logueado pero venía como invitado, limpiamos invitado
   if (!user && invitado) {
-    // ⚠️ MUY IMPORTANTE: hacemos esto en siguiente tick para evitar conflictos
+    //  MUY IMPORTANTE: hacemos esto en siguiente tick para evitar conflictos
     setTimeout(() => {
       useAuthStore.setState({ invitado: false });
     }, 0);
   }
 
-  // ✅ Si está logueado (usuario real), redirigimos
+  //  Si está logueado (usuario real), redirigimos
   if (user) {
     router.replace("/(tabs)/home");
   }

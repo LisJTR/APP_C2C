@@ -28,6 +28,7 @@ export default function ProductDetailScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
+   // Al cargar la pantalla, busca el producto por id
   useEffect(() => {
     const fetchProductAndUser = async () => {
       try {
@@ -44,6 +45,7 @@ export default function ProductDetailScreen() {
     if (id) fetchProductAndUser();
   }, [id]);
 
+  //  Simula la compra (envía orden al backend)
   const handleBuy = async () => {
     try {
       const token = useAuthStore.getState().token;
@@ -84,7 +86,7 @@ export default function ProductDetailScreen() {
           />
         </View>
       </Modal>
-
+      {/*  Carrusel horizontal de miniaturas */}
       <FlatList
         data={product.images}
         keyExtractor={(item, index) => `${item}-${index}`}
@@ -101,7 +103,7 @@ export default function ProductDetailScreen() {
           </TouchableOpacity>
         )}
       />
-
+      {/* Información de producto */}
       <Text style={[styles.title, { fontFamily: 'Poppins_600SemiBold' }]}>{product.title}</Text>
 
       {user && (
@@ -119,6 +121,7 @@ export default function ProductDetailScreen() {
       <Text style={[styles.info]}>Categoría: {product.category}</Text>
       <Text style={[styles.description]}>{product.description}</Text>
 
+      {/*  Botón comprar */}
       <TouchableOpacity style={styles.button} onPress={handleBuy}>
         <Text style={styles.buttonText}>Comprar</Text>
       </TouchableOpacity>

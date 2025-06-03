@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 
 export default function AuthScreen() {
   const router = useRouter();
+  // Estados locales del formulario
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -27,7 +28,7 @@ export default function AuthScreen() {
   const login = useAuthStore((state) => state.login);
   const { t } = useTranslation();
 
-  // 🔹 Manejo de inicio de sesión
+  //  Manejo de inicio de sesión
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", t("auth.requiredFields"));
@@ -47,7 +48,7 @@ export default function AuthScreen() {
     }
   };
 
-  // 🔹 Manejo de registro
+  //  Manejo de registro
   const handleRegister = async () => {
     if (!username || !email || !password) {
       Alert.alert("Error", t("auth.requiredFields"));
@@ -72,7 +73,7 @@ export default function AuthScreen() {
     }
   };
 
-  // 🔹 Permitir que el usuario entre sin cuenta
+  //  Permitir que el usuario entre sin cuenta
   const handleSkip = () => {
     router.replace("./(tabs)");
   };
@@ -129,7 +130,7 @@ export default function AuthScreen() {
   );
 }
 
-// 📌 **ESTILOS**
+//  **ESTILOS**
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#F5F5F5" },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },

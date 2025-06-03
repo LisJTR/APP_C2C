@@ -20,9 +20,12 @@ export default function HomeScreen() {
   const { user, invitado } = useAuthStore();
   const router = useRouter();
 
+  // Filtramos solo las categorías visibles en el home
   const categories = ALL_CATEGORIES.filter((cat) =>
     ["ropa", "calzado", "accesorios", "hogar"].includes(cat.key)
   );
+
+  // Construimos la URL completa de la imagen (añadimos el servidor si es relativa)
    const buildFullImageUrl = (relativePath: string) => {
   if (relativePath.startsWith("/uploads")) {
     const BASE_SERVER_URL = API_BASE_URL.replace("/api", "");
@@ -31,7 +34,7 @@ export default function HomeScreen() {
   return relativePath;
   };
 
-
+  // Cargamos los productos desde el backend cada vez que cambia el buscador o la categoría
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -50,6 +53,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+       {/* Input búsqueda */}
       <TextInput
         style={styles.searchInput}
         placeholder={t("home.search")}
@@ -57,6 +61,7 @@ export default function HomeScreen() {
         onChangeText={setQuery}
       />
 
+      {/* Filtro de categorías */}
       <View style={styles.categoriesContainer}>
         <Text
           key="all"
@@ -82,9 +87,9 @@ export default function HomeScreen() {
           </Text>
         ))}
       </View>
-
+      {/* ítulo productos nuevos */}
       <Text style={styles.sectionTitle}>{t("home.newProducts")}</Text>
-
+      {/* Renderizado de productos */}
       <FlatList
         data={products}
         keyExtractor={(item) => item.id.toString()}

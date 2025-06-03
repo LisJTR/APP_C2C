@@ -13,6 +13,7 @@ export default function ProductWebPage() {
   const [product, setProduct] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
 
+  // Al montar el componente, obtiene el producto y su propietario
   useEffect(() => {
     const fetch = async () => {
       const res = await axios.get(`${API_BASE_URL}/products/${id}`);
@@ -28,9 +29,11 @@ export default function ProductWebPage() {
 
  return (
   <ScrollView style={styles.page} contentContainerStyle={{ flexGrow: 1 }}>
+    {/* Cabecera con sesión iniciada */}
     <HeaderLoggedIn onSearch={() => {}} />
 
     <View style={styles.container}>
+       {/* Galería de imágenes */}
       <View style={styles.gallerySection}>
         <Image source={{ uri: product.images?.[0] }} style={styles.mainImage} />
         <View style={styles.thumbRow}>
@@ -39,7 +42,7 @@ export default function ProductWebPage() {
           ))}
         </View>
       </View>
-
+      {/* Detalles del producto */}
       <View style={styles.infoSection}>
         <Text style={styles.title}>{product.title}</Text>
         <Text style={styles.subtitle}>
@@ -67,7 +70,7 @@ export default function ProductWebPage() {
         <TouchableOpacity style={styles.buyButton}>
           <Text style={styles.buyText}>Comprar</Text>
         </TouchableOpacity>
-
+        {/* Info del vendedor */}
         {user && (
           <TouchableOpacity onPress={() => router.push(`/user/${user.id}`)}>
             <Text style={styles.seller}>Publicado por: {user.username}</Text>

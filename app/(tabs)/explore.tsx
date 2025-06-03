@@ -12,12 +12,14 @@ export default function ExploreScreen() {
   const { user, invitado } = useAuthStore();
   const [showAccessModal, setShowAccessModal] = useState(false);
 
+   // Debug de control cuando entra en esta pantalla (solo para desarrollo
   useEffect(() => {
-    console.log("✅ ExploreScreen");
-    console.log("👉 user:", user);
-    console.log("👉 invitado:", invitado);
+    console.log(" ExploreScreen");
+    console.log("user:", user);
+    console.log(" invitado:", invitado);
   }, []);
 
+   // Comprobamos si está entrando como invitado (para mostrar el modal)
     useEffect(() => {
   let isMounted = true;
 
@@ -34,6 +36,7 @@ export default function ExploreScreen() {
   };
 }, []);
 
+    // Filtrado de categorías en función del texto de búsqueda
   const categories = ALL_CATEGORIES.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -41,15 +44,16 @@ export default function ExploreScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Input de búsqueda */}
       <TextInput
         style={styles.searchInput}
         placeholder={t("explore.searchPlaceholder")}
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
-
+      {/* Título superior */}
       <Text style={styles.title}>{t("explore.title")}</Text>
-
+      {/* Listado de categorías filtradas */}
       <FlatList
         data={categories}
         keyExtractor={(item) => item.key}
@@ -67,6 +71,7 @@ export default function ExploreScreen() {
 
       />
 
+       {/* Modal de acceso restringido para invitados */}
       {showAccessModal && (
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>

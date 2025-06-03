@@ -19,3 +19,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
+
+// Clases puente entre React Native y React para que no de error entre web y app

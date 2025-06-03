@@ -11,25 +11,24 @@ import { useAuthStore } from "@/store/useAuthStore"; // ajústalo si la ruta cam
 
 export default function TabLayout() {
 
-  const loadUser = useAuthStore((state) => state.loadUser); // 
+  const loadUser = useAuthStore((state) => state.loadUser); // Cargamos el usuario almacenado al iniciar
 
   useEffect(() => {
-    loadUser();
+    loadUser();  // Ejecutamos la carga de usuario solo al montar el componente
   }, []);
 
-  const colorScheme = useColorScheme();
-
+  const colorScheme = useColorScheme(); // Detectamos si el usuario está en modo claro u oscuro
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        tabBarStyle: Platform.OS === "web" ? { display: "none" } : {}, // Ocultar en web
+        tabBarStyle: Platform.OS === "web" ? { display: "none" } : {}, // Ocultamos la barra de tabs si estamos en web
       
         
         
       }}
     >
-       {/* 🏠 Home */}
+       {/* Home */}
   <Tabs.Screen
     name="home"
     options={{
@@ -39,7 +38,7 @@ export default function TabLayout() {
     }}
   />
 
-  {/* 💬 Mensajes 
+  {/* Mensajes 
   <Tabs.Screen
     name="messages"
     options={{
@@ -49,7 +48,7 @@ export default function TabLayout() {
     }}
   />*/}
 
-  {/* 🛒 Vende */}
+  {/* Vende */}
   <Tabs.Screen
     name="sell"
     options={{
@@ -59,7 +58,7 @@ export default function TabLayout() {
     }}
   />
 
-  {/* 🔍 Buscar */}
+  {/* Buscar */}
   <Tabs.Screen
     name="explore"
     options={{
@@ -69,7 +68,7 @@ export default function TabLayout() {
     }}
   />
 
-  {/* 👤 Perfil */}
+  {/*  Perfil */}
   <Tabs.Screen
     name="profile"
     options={{

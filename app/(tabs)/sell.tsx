@@ -19,6 +19,7 @@ import { ALL_CATEGORIES } from "../../constants/categories";
 import { useRouter } from "expo-router";
 
 export default function SellScreen() {
+   // Estados para cada uno de los campos del formulario
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -27,6 +28,7 @@ export default function SellScreen() {
   const [condition, setCondition] = useState("");
   const [brand, setBrand] = useState("");
 
+   // Estados de control de UI
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showConditionDropdown, setShowConditionDropdown] = useState(false);
   const [images, setImages] = useState<string[]>([]);
@@ -36,6 +38,7 @@ export default function SellScreen() {
   const router = useRouter();
   const [showAccessModal, setShowAccessModal] = useState(false);
 
+  // Control de acceso de invitado
   useEffect(() => {
     let isMounted = true;
     if (!user && invitado) {
@@ -48,6 +51,7 @@ export default function SellScreen() {
     };
   }, []);
 
+   // Elegir imagen desde galería
   const pickImageFromGallery = async () => {
     const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!granted) {
@@ -65,6 +69,7 @@ export default function SellScreen() {
     }
   };
 
+  // Tomar foto desde cámara
   const takePhotoWithCamera = async () => {
     const { granted } = await ImagePicker.requestCameraPermissionsAsync();
     if (!granted) {
@@ -81,6 +86,7 @@ export default function SellScreen() {
     }
   };
 
+  // Al pulsar "Subir producto"
   const handleSubmit = async () => {
     if (!title || !description || !price || !category || !size || !condition || !brand || images.length === 0) {
       Alert.alert("Campos requeridos", "Por favor, rellena todos los campos.");
@@ -96,6 +102,7 @@ export default function SellScreen() {
       setLoading(true);
       const imageUrls: string[] = [];
 
+      // Subir cada imagen al backend
       for (const uri of images) {
         const formData = new FormData();
         formData.append("image", {
@@ -112,6 +119,7 @@ export default function SellScreen() {
         imageUrls.push(imageUrl);
       }
 
+      // Crear el producto con los datos introducidos
       await axios.post(`${API_BASE_URL}/products`, {
         user_id: user.id,
         title,
@@ -124,6 +132,7 @@ export default function SellScreen() {
         images: imageUrls,
       });
 
+      // Limpiar formulario tras envío correcto
       Alert.alert("Éxito", "Producto subido correctamente.");
       // Limpiar formulario
       setTitle("");

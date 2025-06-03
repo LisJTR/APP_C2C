@@ -7,7 +7,7 @@ import HeroSection from "../components/Bridges/HeadersWeb/HeroSection";
 import ProductGrid from "../components/Bridges/HeadersWeb/ProductGrid";
 import Footer from "../components/Bridges/HeadersWeb/Footer";
 import { useTranslation } from "react-i18next";
-import { isLoggedIn } from "@/utils/auth"; // 👈 importante
+import { isLoggedIn } from "@/utils/auth"; 
 
 export default function WelcomeScreen() {
   const [showModal, setShowModal] = useState(false);
@@ -17,13 +17,14 @@ export default function WelcomeScreen() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Si cambia la ruta, cierra el modal automáticamente
   useEffect(() => {
     if (pathname !== "/welcome") {
       setShowModal(false);
     }
   }, [pathname]);
 
-  // 👇 Redirigir si ya hay sesión
+  // Al cargar, comprobamos si ya hay sesión iniciada
   useEffect(() => {
     const check = async () => {
       const logged = await isLoggedIn();
@@ -36,12 +37,15 @@ export default function WelcomeScreen() {
     check();
   }, []);
 
+  // Mientras revisa si hay sesión no renderiza nada
   if (loading) return null;
 
+   // Renderizado principal
   return (
     <View style={styles.container}>
       {Platform.OS === "web" ? (
         <>
+        {/* Versión WEB */}
           <View style={{ position: "relative", zIndex: 10 }}>
             <Header
               onLoginPress={() => setShowModal(true)}
@@ -56,12 +60,14 @@ export default function WelcomeScreen() {
             <View style={styles.heroContainer}>
               <HeroSection onLoginPress={() => setShowModal(true)} />
             </View>
+            {/* Grid de productos destacados */}
             <ProductGrid onProductClick={() => setShowModal(true)} />
             <Footer />
           </ScrollView>
         </>
       ) : (
         <>
+        {/* Versión MÓVIL */}
           <View style={styles.topRight}>
             <Pressable onPress={() => setShowModal(true)}>
               <Text style={styles.loginText}>
@@ -76,7 +82,7 @@ export default function WelcomeScreen() {
           </View>
         </>
       )}
-
+      {/* Modal de login/registro */}
       <AuthModal visible={showModal} onClose={() => setShowModal(false)} />
     </View>
   );

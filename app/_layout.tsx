@@ -29,7 +29,7 @@ export default function RootLayout() {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
-  // ✅ Redirige solo si está logueado (NO invitado) y está en Welcome
+  //  Redirige solo si está logueado (NO invitado) y está en Welcome
    useEffect(() => {
     if (!rootNavigation?.key) return;
 

@@ -2,14 +2,16 @@ import { Image, TouchableOpacity, StyleSheet } from "react-native";
 import {  STATIC_HOST  } from "../utils/config";
 
 
-
+// Tipado de props que recibe el componente Avatar
 interface AvatarProps {
   uri: string | null | undefined;
   size?: number;
   onPress?: () => void;
 }
 
+// Componente Avatar reutilizable
 export default function Avatar({ uri, size = 32, onPress }: AvatarProps) {
+   // Si la ruta es relativa (empieza por /uploads), se concatena la URL completa del servidor
   const fullUri = uri?.startsWith("/uploads") ? `${ STATIC_HOST }${uri}` : uri; 
 
   return (

@@ -36,7 +36,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [showAccessModal, setShowAccessModal] = useState(false);
 
-
+  // Control de acceso para invitado (muestra modal)
   useEffect(() => {
   let isMounted = true;
 
@@ -53,11 +53,12 @@ export default function ProfileScreen() {
   };
 }, []);
 
-
+    //Cargamos datos iniciales del usuario desde el store
     useEffect(() => {
       loadUser();
     }, []);
 
+     // Sincronizamos el estado interno con los datos del usuario al cargar
     useEffect(() => {
       if (user) {
         setUsername(user.username || "");
@@ -66,6 +67,8 @@ export default function ProfileScreen() {
         setAvatarUrl(user.avatar_url || "");
       }
     }, [user]);
+
+    //Si no hay usuario, mostramos el modal de acceso restringido
     if (!user && invitado) {
       return (
         <View style={{ flex: 1 }}>
@@ -89,6 +92,7 @@ export default function ProfileScreen() {
       );
     }
 
+    // Si el usuario está cargando mostramos el loader
     if (!user) {
       return (
         <View style={styles.loader}>
@@ -97,10 +101,11 @@ export default function ProfileScreen() {
       );
     }
 
+     // Seleccionar nueva imagen de perfil
         const handlePickImage = async () => {
-      console.log("🟢 handlePickImage se ha ejecutado");
+      console.log(" handlePickImage se ha ejecutado");
       const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      console.log("🔐 Permiso concedido:", granted);
+      console.log(" Permiso concedido:", granted);
       if (!granted) {
         Alert.alert("Permiso denegado", "Se necesita acceso a la galería");
         return;
@@ -114,7 +119,7 @@ export default function ProfileScreen() {
         quality: 0.7,
       });
 
-      console.log("🧪 Resultado del picker:", result);
+      console.log(" Resultado del picker:", result);
 
 
     if (!result.canceled && result.assets.length > 0) {
@@ -129,9 +134,9 @@ export default function ProfileScreen() {
 
       try {
         setLoading(true);
-        console.log("📸 Imagen seleccionada:", image.uri);
-        console.log("📤 Enviando a:", `${API_BASE_URL}/upload`);
-        console.log("📦 FormData:", formData);
+        console.log(" Imagen seleccionada:", image.uri);
+        console.log(" Enviando a:", `${API_BASE_URL}/upload`);
+        console.log(" FormData:", formData);
         const uploadResponse = await axios.post(
           `${API_BASE_URL}/upload`,
           formData,
