@@ -1,8 +1,6 @@
-# Documentación del Proyecto
+###  APP Multiplataforma 👕📱  
 
-###  Descripción de la App 👕📱  
-
-Este es un proyecto desarrollado en **React Native con Expo**.  
+Este proyecto consiste en el desarrollo de una **plataforma de compra-venta de productos entre usuarios**, permitiendo publicar productos, gestionar perfiles de usuario, realizar búsquedas y visualizar detalles de los artículos disponibles.
 
 ####  Objetivo  
 Crear una aplicación funcional para la **compra y venta de productos de segunda mano**, donde los usuarios puedan:  
@@ -45,9 +43,6 @@ nmp install
 npx expo start
 ```
 
-###  Estrucutra del proyecto
-
-![Estructura Inicial V0.1](./assets/estructura_inicial.png)
 
 ###  Funciones Principales
 
